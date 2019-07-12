@@ -1,4 +1,4 @@
-package components
+package transpiler
 
 var comptpl = `
 package components

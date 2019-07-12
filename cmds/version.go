@@ -11,11 +11,10 @@ func init() {
 		Use:     "version",
 		Aliases: []string{"v"},
 		Short:   "version info",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("version", version.Version)
 			fmt.Println("commitV", version.CommitV)
 			fmt.Println("buildV", version.BuildV)
-			return nil
 		},
 	})
 }

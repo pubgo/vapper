@@ -1,4 +1,4 @@
-package codegen
+package templates
 
 // GlobalCSS returns the global CSS code
 const GlobalCSS = `

@@ -1,4 +1,4 @@
-package components
+package transpiler
 
 import (
 	"github.com/gobuffalo/envy"
@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pubgo/vapper/utils"
+	"github.com/pubgo/vapper/pkg"
 )
 
 // ProcessAll processes components starting at base
@@ -20,11 +20,11 @@ func ProcessAll(base string) {
 
 		errors.Panic(err)
 
-		if !info.IsDir() && utils.IsHTML(info) {
+		if !info.IsDir() && pkg.IsHTML(info) {
 			f, err := os.Open(path)
 			errors.Panic(err)
 
-			comp := utils.ComponentName(path)
+			comp := pkg.ComponentName(path)
 			gfn := filepath.Join(base, strings.ToLower(comp)+".go")
 			_, err = os.Stat(gfn)
 			var makeStruct bool
@@ -32,7 +32,7 @@ func ProcessAll(base string) {
 				makeStruct = true
 			}
 
-			gf, err := os.Create(utils.GeneratedGoFileName(base, comp))
+			gf, err := os.Create(pkg.GeneratedGoFileName(base, comp))
 			errors.Wrap(err, "error")
 			defer errors.Panic(gf.Close)
 

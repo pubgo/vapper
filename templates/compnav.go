@@ -1,4 +1,4 @@
-package codegen
+package templates
 
 // NavComponentGo returns the Go code for the Nav component
 //

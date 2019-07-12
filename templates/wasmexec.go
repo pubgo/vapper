@@ -1,4 +1,4 @@
-package codegen
+package templates
 
 // WasmJS returns the javascript to execute the wasm binary
 const WasmJS = `// Copyright 2018 The Go Authors. All rights reserved.

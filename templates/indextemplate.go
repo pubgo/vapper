@@ -1,4 +1,4 @@
-package codegen
+package templates
 
 // IndexHTML returns the HTML for the initial index page that serves
 // the wasm "shell"

@@ -1,4 +1,4 @@
-package codegen
+package templates
 
 // RoutesHTML returns the HTML code for the index route
 const TodoClient = `package models

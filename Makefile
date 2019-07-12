@@ -6,4 +6,8 @@ wasm:
 run:  wasm
 	cd server && go build && cd .. && ./server/server
 
-#https://compile.jsgo.io/<path>
+b:
+	go build -o main .
+
+jsgo:
+	echo https://compile.jsgo.io/pubgo/vapper

@@ -1,4 +1,4 @@
-package codegen
+package templates
 
 var IndexHtmlTpl = `<html>
 	<head>

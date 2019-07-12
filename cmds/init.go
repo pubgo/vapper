@@ -16,7 +16,7 @@ package cmds
 
 import (
 	"fmt"
-	"github.com/pubgo/vapper/codegen"
+	"github.com/pubgo/vapper/templates"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -66,17 +66,17 @@ to quickly create a Cobra application.`,
 		fmt.Println("app package", appPkg)
 
 		// put the new files there
-		writeTemplate(filepath.Join(cwd, appName, "app", "index.html"), codegen.IndexHTML)
-		//writeTemplate(filepath.Join(cwd, appName, "app", "wasm_exec.js"), codegen.WasmJS)
-		writeTemplate(filepath.Join(cwd, appName, "assets", "global.css"), codegen.GlobalCSS)
-		writeTemplate(filepath.Join(cwd, appName, "client", "main.go"), codegen.ClientGoMain(appPkg))
-		writeTemplate(filepath.Join(cwd, appName, "components", "Nav.html"), codegen.NavComponentHTML)
-		writeTemplate(filepath.Join(cwd, appName, "components", "nav.go"), codegen.NavComponentGo)
-		writeTemplate(filepath.Join(cwd, appName, "routes", "Index.html"), codegen.RoutesHTML)
-		writeTemplate(filepath.Join(cwd, appName, "routes", "index.go"), codegen.RoutesGo)
-		writeTemplate(filepath.Join(cwd, appName, "models", "todo.go"), codegen.TodoClient)
-		writeTemplate(filepath.Join(cwd, appName, "server", "main.go"), codegen.ServerGoMain(appPkg))
-		writeTemplate(filepath.Join(cwd, appName, "Makefile"), codegen.Makefile)
+		writeTemplate(filepath.Join(cwd, appName, "app", "index.html"), templates.IndexHTML)
+		//writeTemplate(filepath.Join(cwd, appName, "app", "wasm_exec.js"), templates.WasmJS)
+		writeTemplate(filepath.Join(cwd, appName, "assets", "global.css"), templates.GlobalCSS)
+		writeTemplate(filepath.Join(cwd, appName, "client", "main.go"), templates.ClientGoMain(appPkg))
+		writeTemplate(filepath.Join(cwd, appName, "components", "Nav.html"), templates.NavComponentHTML)
+		writeTemplate(filepath.Join(cwd, appName, "components", "nav.go"), templates.NavComponentGo)
+		writeTemplate(filepath.Join(cwd, appName, "routes", "Index.html"), templates.RoutesHTML)
+		writeTemplate(filepath.Join(cwd, appName, "routes", "index.go"), templates.RoutesGo)
+		writeTemplate(filepath.Join(cwd, appName, "models", "todo.go"), templates.TodoClient)
+		writeTemplate(filepath.Join(cwd, appName, "server", "main.go"), templates.ServerGoMain(appPkg))
+		writeTemplate(filepath.Join(cwd, appName, "Makefile"), templates.Makefile)
 	},
 }
 

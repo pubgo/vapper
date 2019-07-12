@@ -1,9 +1,9 @@
-package components
+package transpiler
 
 import (
 	"fmt"
 	"github.com/pubgo/errors"
-	"github.com/pubgo/vapper/components/transpiler"
+	"github.com/pubgo/vapper/pkg/transpiler/transpiler"
 	"html/template"
 	"io/ioutil"
 	"regexp"

@@ -1,4 +1,4 @@
-package codegen
+package templates
 
 // Makefile returns the Makefile code for the new app
 //

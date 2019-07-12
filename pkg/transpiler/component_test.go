@@ -1,4 +1,4 @@
-package components
+package transpiler
 
 import (
 	"bytes"
