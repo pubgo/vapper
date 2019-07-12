@@ -1,6 +1,12 @@
+github.com/dave/flux v0.0.0-20180702001202-0b08a93f243b h1:j+HlpWNtSFwgSmhSmI6TsJwTQ4ZcVl3gZIDPMJ94TcY=
+github.com/dave/flux v0.0.0-20180702001202-0b08a93f243b/go.mod h1:06H6BzTj0Sjsa6y3fdSodXqN7gP7zwILlW+A9Opuv3Y=
 github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c h1:7lF+Vz0LqiRidnzC1Oq86fpX1q/iEv2KJdrCtttYjT4=
 github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
+github.com/gopherjs/vecty v0.0.0-20190701174234-2b6fc20f8913 h1:h5R2K5Wqn5av3i4xHkyVgI2qCSbpJHAqqAkKpMPh0eE=
+github.com/gopherjs/vecty v0.0.0-20190701174234-2b6fc20f8913/go.mod h1:Yd9AOfl6lN1BWnVnvaSBwKiTCAcnlIGGvdsODOOZ9RY=
 github.com/pubgo/vrouter v0.0.0-20190712092944-21c993f98047 h1:RSjgMAgDk1sMSz2STUDRAe2w54/x7g2JYIKbkynl0G4=
 github.com/pubgo/vrouter v0.0.0-20190712092944-21c993f98047/go.mod h1:I9zssVEccjEgV7Sd9px/Y8W5PsP01NUPFEtz8YIxmvY=
 github.com/siongui/godom v0.0.0-20181006133514-8ba1cdb25192 h1:+H5lXLoRFOu/K/q8focJ8syTYjqEOaGwVJE6MpyKFPA=
 github.com/siongui/godom v0.0.0-20181006133514-8ba1cdb25192/go.mod h1:HlsL4IlMbIFM7fVEzc61bwE3Or1cNJzKZMDkO2xO9gA=
+honnef.co/go/js/dom v0.0.0-20190526011328-ebc4cf92d81f h1:b3Q9PqH+5NYHfIjNUEN+f8lYvBh9A25AX+kPh8dpYmc=
+honnef.co/go/js/dom v0.0.0-20190526011328-ebc4cf92d81f/go.mod h1:sUMDUKNB2ZcVjt92UnLy3cdGs+wDAcrPdV3JP6sVgA4=
