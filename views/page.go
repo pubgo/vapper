@@ -4,19 +4,24 @@ import (
 	"github.com/gopherjs/vecty"
 	"github.com/gopherjs/vecty/elem"
 	"github.com/gopherjs/vecty/prop"
-	"github.com/pubgo/vapper/app"
+	"github.com/pubgo/vapper/router"
+	"github.com/pubgo/vapper/stores"
 )
 
 type Page struct {
 	vecty.Core
-	app *app.App
+	app *stores.App
 }
 
-func NewPage(app *app.App) *Page {
+func NewPage(app *stores.App) *Page {
 	v := &Page{
 		app: app,
 	}
 	return v
+}
+
+func (v *Page) Handle(ctx *router.Context) {
+	vecty.RenderBody(v)
 }
 
 func (v *Page) Mount() {

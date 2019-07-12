@@ -1,10 +1,13 @@
-package app
+package stores
 
 import (
 	"fmt"
 	"github.com/dave/flux"
 	"github.com/gopherjs/gopherjs/js"
 	dom "github.com/siongui/godom"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type App struct {
@@ -47,23 +50,46 @@ func (a *App) Debug(message ...interface{}) {
 	js.Global.Get("console").Call("log", message...)
 }
 
-func (a *App) Log(message ...interface{}) {
+var lastLog *struct{}
+
+// LogHide hides the message after 2 seconds
+func (a *App) LogHide(args ...interface{}) {
+	a.Log(args...)
+	if len(args) > 0 {
+		// clear message after 2 sec if not changed
+		before := lastLog
+		go func() {
+			<-time.After(time.Second * 2)
+			if before == lastLog {
+				a.Log()
+			}
+		}()
+	}
+}
+
+func (a *App) Log(args ...interface{}) {
 	m := dom.Document.GetElementById("message")
-	if len(message) == 0 {
-		m.SetInnerHTML("")
-		return
+	var message string
+	if len(args) > 0 {
+		message = strings.TrimSuffix(fmt.Sprintln(args...), "\n")
 	}
-	s := fmt.Sprint(message[0])
-	if m.InnerHTML() != s {
+	if m.InnerHTML() != message {
+		if message != "" {
+			js.Global.Get("console").Call("log", "Status", strconv.Quote(message))
+		}
 		requestAnimationFrame()
-		m.SetInnerHTML(s)
+		m.SetInnerHTML(message)
 		requestAnimationFrame()
+		lastLog = &struct{}{}
 	}
-	js.Global.Get("console").Call("log", message...)
 }
 
 func (a *App) Logf(format string, args ...interface{}) {
 	a.Log(fmt.Sprintf(format, args...))
+}
+
+func (a *App) LogHidef(format string, args ...interface{}) {
+	a.LogHide(fmt.Sprintf(format, args...))
 }
 
 func requestAnimationFrame() {
