@@ -1,6 +1,7 @@
 package views
 
 import (
+	"fmt"
 	"github.com/dave/splitter"
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/vecty"
@@ -8,6 +9,8 @@ import (
 	"github.com/gopherjs/vecty/prop"
 	"github.com/pubgo/vapper/frontend/actions"
 	"github.com/pubgo/vapper/frontend/stores"
+	router "marwan.io/vecty-router"
+	 "honnef.co/go/js/dom"
 )
 
 type Page struct {
@@ -24,56 +27,62 @@ func NewPage(app *stores.App) *Page {
 	return v
 }
 
-func (v *Page) Mount() {
-	v.app.Watch(v, func(done chan struct{}) {
+func (t *Page) Route() *router.Route {
+	return router.NewRoute("/", t, router.NewRouteOpts{ExactMatch: true})
+}
+
+func (t *Page) Mount() {
+	t.app.Watch(t, func(done chan struct{}) {
 		defer close(done)
-		// Only top-level page should fire vecty.Rerender
-		vecty.Rerender(v)
+		vecty.Rerender(t)
 	})
 
-	v.split = splitter.New("split")
-	v.split.Init(
+	t.split = splitter.New("split")
+	t.split.Init(
 		js.S{"#left", "#right"},
 		js.M{"sizes": []float64{50, 50}},
 	)
 }
 
-func (v *Page) Unmount() {
-	v.app.Delete(v)
+func (t *Page) Unmount() {
+	t.app.Delete(t)
 }
 
-func (v *Page) Render() vecty.ComponentOrHTML {
+func (t *Page) Render() vecty.ComponentOrHTML {
+	fmt.Println(router.GetNamedVar(t), "hello")
+	fmt.Println(dom.GetWindow().Document().DocumentURI(), "hello")
+
 	return elem.Body(
 		elem.Div(
 			vecty.Markup(
 				vecty.Class("container-fluid", "p-0", "split", "split-horizontal"),
 			),
-			v.renderLeft(),
-			v.renderRight(),
+			t.renderLeft(),
+			t.renderRight(),
 		),
 	)
 }
 
-func (v *Page) renderLeft() *vecty.HTML {
+func (t *Page) renderLeft() *vecty.HTML {
 	return elem.Div(
 		vecty.Markup(
 			prop.ID("left"),
 			vecty.Class("split"),
 		),
-		NewEditor(v.app, "html-editor", "html", v.app.Editor.Html(), true, func(value string) {
-			v.app.Dispatch(&actions.UserChangedTextAction{
+		NewEditor(t.app, "html-editor", "html", t.app.Editor.Html(), true, func(value string) {
+			t.app.Dispatch(&actions.UserChangedTextAction{
 				Text: value,
 			})
 		}),
 	)
 }
 
-func (v *Page) renderRight() *vecty.HTML {
+func (t *Page) renderRight() *vecty.HTML {
 	return elem.Div(
 		vecty.Markup(
 			prop.ID("right"),
 			vecty.Class("split"),
 		),
-		NewEditor(v.app, "code-editor", "golang", v.app.Editor.Code(), false, nil),
+		NewEditor(t.app, "code-editor", "golang", t.app.Editor.Code(), false, nil),
 	)
 }
