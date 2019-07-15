@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gopherjs/vecty"
 	"github.com/pubgo/vapper/frontend/routes"
 	"github.com/pubgo/vapper/frontend/stores"
 )
@@ -23,8 +24,5 @@ func run() {
 
 	app := &stores.App{}
 	app.Init()
-
-	routes.NewRouter(app).Run()
+	vecty.RenderBody(routes.NewRouter(app))
 }
-
-

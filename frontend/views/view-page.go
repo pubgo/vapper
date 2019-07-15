@@ -27,7 +27,6 @@ func NewPage(app *stores.App) *Page {
 func (v *Page) Mount() {
 	v.app.Watch(v, func(done chan struct{}) {
 		defer close(done)
-		// Only top-level page should fire vecty.Rerender
 		vecty.Rerender(v)
 	})
 

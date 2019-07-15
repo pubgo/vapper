@@ -5,5 +5,7 @@ import (
 )
 
 func (t *Router) render() {
+	t.routes = t.routes[:0]
+
 	t.route("/", views.NewPage(t.app), true)
 }

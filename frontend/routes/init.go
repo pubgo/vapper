@@ -29,6 +29,8 @@ func (t *Router) Run() {
 }
 
 func (t *Router) Render() vecty.ComponentOrHTML {
+	t.render()
+	
 	return elem.Body(
 		t.routes...
 	)
