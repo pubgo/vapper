@@ -1,16 +1,20 @@
 package views
 
 import (
+	"github.com/dave/splitter"
+	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/vecty"
 	"github.com/gopherjs/vecty/elem"
 	"github.com/gopherjs/vecty/prop"
-	"github.com/pubgo/vapper/router"
-	"github.com/pubgo/vapper/stores"
+	"github.com/pubgo/vapper/frontend/actions"
+	"github.com/pubgo/vapper/frontend/stores"
 )
 
 type Page struct {
 	vecty.Core
 	app *stores.App
+
+	split *splitter.Split
 }
 
 func NewPage(app *stores.App) *Page {
@@ -20,10 +24,6 @@ func NewPage(app *stores.App) *Page {
 	return v
 }
 
-func (v *Page) Handle(ctx *router.Context) {
-	vecty.RenderBody(v)
-}
-
 func (v *Page) Mount() {
 	v.app.Watch(v, func(done chan struct{}) {
 		defer close(done)
@@ -31,6 +31,11 @@ func (v *Page) Mount() {
 		vecty.Rerender(v)
 	})
 
+	v.split = splitter.New("split")
+	v.split.Init(
+		js.S{"#left", "#right"},
+		js.M{"sizes": []float64{50, 50}},
+	)
 }
 
 func (v *Page) Unmount() {
@@ -55,6 +60,11 @@ func (v *Page) renderLeft() *vecty.HTML {
 			prop.ID("left"),
 			vecty.Class("split"),
 		),
+		NewEditor(v.app, "html-editor", "html", v.app.Editor.Html(), true, func(value string) {
+			v.app.Dispatch(&actions.UserChangedTextAction{
+				Text: value,
+			})
+		}),
 	)
 }
 
@@ -64,5 +74,6 @@ func (v *Page) renderRight() *vecty.HTML {
 			prop.ID("right"),
 			vecty.Class("split"),
 		),
+		NewEditor(v.app, "code-editor", "golang", v.app.Editor.Code(), false, nil),
 	)
 }

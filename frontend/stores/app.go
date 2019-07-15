@@ -2,18 +2,18 @@ package stores
 
 import (
 	"fmt"
+
 	"github.com/dave/flux"
 	"github.com/gopherjs/gopherjs/js"
 	dom "github.com/siongui/godom"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type App struct {
 	Dispatcher flux.DispatcherInterface
 	Watcher    flux.WatcherInterface
 	Notifier   flux.NotifierInterface
+
+	Editor *EditorStore
 }
 
 func (a *App) Init() {
@@ -22,10 +22,13 @@ func (a *App) Init() {
 	a.Notifier = n
 	a.Watcher = n
 
+	a.Editor = NewEditorStore(a)
+
 	a.Dispatcher = flux.NewDispatcher(
 		// Notifier:
 		a.Notifier,
 		// Stores:
+		a.Editor,
 	)
 }
 
@@ -50,46 +53,23 @@ func (a *App) Debug(message ...interface{}) {
 	js.Global.Get("console").Call("log", message...)
 }
 
-var lastLog *struct{}
-
-// LogHide hides the message after 2 seconds
-func (a *App) LogHide(args ...interface{}) {
-	a.Log(args...)
-	if len(args) > 0 {
-		// clear message after 2 sec if not changed
-		before := lastLog
-		go func() {
-			<-time.After(time.Second * 2)
-			if before == lastLog {
-				a.Log()
-			}
-		}()
-	}
-}
-
-func (a *App) Log(args ...interface{}) {
+func (a *App) Log(message ...interface{}) {
 	m := dom.Document.GetElementById("message")
-	var message string
-	if len(args) > 0 {
-		message = strings.TrimSuffix(fmt.Sprintln(args...), "\n")
+	if len(message) == 0 {
+		m.SetInnerHTML("")
+		return
 	}
-	if m.InnerHTML() != message {
-		if message != "" {
-			js.Global.Get("console").Call("log", "Status", strconv.Quote(message))
-		}
+	s := fmt.Sprint(message[0])
+	if m.InnerHTML() != s {
 		requestAnimationFrame()
-		m.SetInnerHTML(message)
+		m.SetInnerHTML(s)
 		requestAnimationFrame()
-		lastLog = &struct{}{}
 	}
+	js.Global.Get("console").Call("log", message...)
 }
 
 func (a *App) Logf(format string, args ...interface{}) {
 	a.Log(fmt.Sprintf(format, args...))
-}
-
-func (a *App) LogHidef(format string, args ...interface{}) {
-	a.LogHide(fmt.Sprintf(format, args...))
 }
 
 func requestAnimationFrame() {
