@@ -1,9 +1,9 @@
 
-w:
-	gopherjs build github.com/pubgo/vapper/frontend -o static/frontend.js -w
+build:
+	gopherjs build github.com/pubgo/vapper/frontend -o static/frontend.min.js -m
 
 s:
-	gopherjs serve .
+	gopherjs serve github.com/pubgo/vapper/frontend
 
 jsgo:
-	echo https://compile.jsgo.io/pubgo/vapper
+	echo https://compile.jsgo.io/pubgo/vapper/frontend
