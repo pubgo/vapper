@@ -19,4 +19,4 @@ golden/server/server
 vendor
 main
 vapper
-frontend.js
+frontend.js*

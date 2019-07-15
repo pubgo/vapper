@@ -10,7 +10,6 @@ require (
 	github.com/dave/jennifer v1.3.0
 	github.com/dave/jsgo v0.0.2
 	github.com/dave/locstor v0.2.2 // indirect
-	github.com/dave/play v0.0.0-20180927083150-0d1bd3827742
 	github.com/dave/saver v0.0.0-20180225103955-fdc4f04c19d0 // indirect
 	github.com/dave/services v0.1.0
 	github.com/dave/splitter v0.0.0-20180330112913-c0ff92e77fb5
@@ -22,6 +21,7 @@ require (
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pubgo/errors v0.2.16
+	github.com/pubgo/vrouter v0.0.0-20190712092944-21c993f98047
 	github.com/siongui/godom v0.0.0-20181006133514-8ba1cdb25192
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0

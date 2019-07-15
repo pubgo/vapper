@@ -28,7 +28,7 @@ func NewPage(app *stores.App) *Page {
 }
 
 func (t *Page) Route() *router.Route {
-	return router.NewRoute("/", t, router.NewRouteOpts{ExactMatch: true})
+	return router.NewRoute("/a", t, router.NewRouteOpts{ExactMatch: true})
 }
 
 func (t *Page) Mount() {
