@@ -30,15 +30,23 @@ func run() {
 	p := views.NewPage(app)
 
 	r := vrouter.New()
-	// Use HandleFunc to add routes.
-	r.HandleFunc("/greet/{name}", func(context *vrouter.Context) {
-		// The handler for this route simply grabs the name parameter
-		// from the map of params and says hello.
-		fmt.Printf("Hello, %s\n", context.Params["name"])
-		vecty.RenderBody(p)
-	})
-	// You must call Start in order to start listening for changes
-	// in the url and trigger the appropriate handler function.
-	r.Start()
-	r.Navigate("/greet/hello")
+	r.ForceHashURL=false
+	//r.ShouldInterceptLinks=true
+
+	//// Use HandleFunc to add routes.
+	//r.HandleFunc("/greet/{name}", func(context *vrouter.Context) {
+	//	// The handler for this route simply grabs the name parameter
+	//	// from the map of params and says hello.
+	//	fmt.Printf("Hello, %s\n", context.Params["name"])
+	//	vecty.RenderBody(p)
+	//})
+	//r.HandleFunc("/", func(context *vrouter.Context) {
+	//	fmt.Println(context,"context")
+	//
+	//	vecty.RenderBody(p)
+	//})
+	//// You must call Start in order to start listening for changes
+	//// in the url and trigger the appropriate handler function.
+	//r.Start()
+	//r.Navigate("/")
 }
