@@ -40,7 +40,6 @@ var rootCmd = &cobra.Command{
 		home, err := homedir.Dir()
 		errors.Wrap(err, "home dir error")
 		viper.AddConfigPath(home)
-
 		viper.AddConfigPath("/app/config")
 		viper.AddConfigPath("config")
 		viper.AddConfigPath("pdd/config")

@@ -7,7 +7,7 @@ require (
 	github.com/aymerick/douceur v0.2.0
 	github.com/cespare/xxhash v1.1.0
 	github.com/dave/dropper v0.0.0-20180504083721-b68ed4cee563 // indirect
-	github.com/dave/flux v0.0.0-20180702001202-0b08a93f243b // indirect
+	github.com/dave/flux v0.0.0-20180702001202-0b08a93f243b
 	github.com/dave/jennifer v1.3.0
 	github.com/dave/jsgo v0.0.2 // indirect
 	github.com/dave/locstor v0.2.2 // indirect
@@ -31,6 +31,7 @@ require (
 	github.com/pubgo/errors v0.3.0
 	github.com/pubgo/vrouter v0.0.0-20190712092944-21c993f98047 // indirect
 	github.com/rs/zerolog v1.14.3
+	github.com/siongui/godom v0.0.0-20181006133514-8ba1cdb25192
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/tdewolff/parse v2.3.4+incompatible
