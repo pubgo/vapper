@@ -1,6 +1,7 @@
 package vapper
 
 import (
+	"fmt"
 	"github.com/dave/flux"
 	. "github.com/siongui/godom"
 	dom "github.com/siongui/godom"
@@ -47,6 +48,9 @@ type Vapper struct {
 func (t *Vapper) handleInject(_in interface{}) {
 	_hn := reflect.ValueOf(_in)
 	if !_hn.IsValid() || _hn.IsNil() {
+		fmt.Println(_hn.String())
+		fmt.Println(_hn.Kind())
+		fmt.Println(_hn.Type().String())
 		panic(_in)
 	}
 
@@ -80,7 +84,7 @@ func (t *Vapper) handleInject(_in interface{}) {
 
 // Start causes the router to listen for changes to window.location and
 // trigger the appropriate handler whenever there is a change.
-func (t *Vapper)Start() {
+func (t *Vapper) Start() {
 	// inject app,store,config
 	for _, d := range t.routes {
 		t.handleInject(d.handler)
