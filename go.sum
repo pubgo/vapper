@@ -211,6 +211,8 @@ github.com/prometheus/procfs v0.0.0-20190507164030-5867b95ac084/go.mod h1:TjEm7z
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/pubgo/errors v0.2.16 h1:B1PXYeDYi7yx8GDVQu2PY0n+m71uJosJaOZ2B1gPGgo=
 github.com/pubgo/errors v0.2.16/go.mod h1:ndINQoGJ6/FZZqIE7PaBaCnFQHcTPe+2JDQaGc4e6Lk=
+github.com/pubgo/errors v0.3.0 h1:gz6xAp8DuY9o5k1Od/wPFAMIy4q+imwgNF0rZzt7gps=
+github.com/pubgo/errors v0.3.0/go.mod h1:ndINQoGJ6/FZZqIE7PaBaCnFQHcTPe+2JDQaGc4e6Lk=
 github.com/pubgo/vrouter v0.0.0-20190712092944-21c993f98047 h1:RSjgMAgDk1sMSz2STUDRAe2w54/x7g2JYIKbkynl0G4=
 github.com/pubgo/vrouter v0.0.0-20190712092944-21c993f98047/go.mod h1:I9zssVEccjEgV7Sd9px/Y8W5PsP01NUPFEtz8YIxmvY=
 github.com/quasoft/memstore v0.0.0-20180925164028-84a050167438/go.mod h1:wTPjTepVu7uJBYgZ0SdWHQlIas582j6cn2jgk4DDdlg=

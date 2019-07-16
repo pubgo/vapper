@@ -1,7 +1,6 @@
 package cmds
 
 import (
-	"fmt"
 	gbuild "github.com/gopherjs/gopherjs/build"
 	"github.com/kisielk/gotool"
 	"github.com/pubgo/errors"
@@ -33,73 +32,69 @@ func init() {
 		Short: "compile packages and dependencies",
 		Run: func(cmd *cobra.Command, args []string) {
 			defer errors.Assert()
-
 			options.BuildTags = strings.Fields(tags)
+
+			_func := func(s *gbuild.Session) {
+				// Handle "gopherjs build [files]" ad-hoc package mode.
+
+				if len(args) > 0 && (strings.HasSuffix(args[0], ".go") || strings.HasSuffix(args[0], ".inc.js")) {
+					for _, arg := range args {
+						errors.T(!strings.HasSuffix(arg, ".go") && !strings.HasSuffix(arg, ".inc.js"), "named files must be .go or .inc.js files")
+					}
+
+					if pkgObj == "" {
+						basename := filepath.Base(args[0])
+						pkgObj = basename[:len(basename)-3] + ".js"
+					}
+					names := make([]string, len(args))
+					for i, name := range args {
+						name = filepath.ToSlash(name)
+						names[i] = name
+						if s.Watcher != nil {
+							errors.Panic(s.Watcher.Add(name))
+						}
+					}
+					errors.Panic(s.BuildFiles(args, pkgObj, currentDirectory))
+				}
+
+				// Expand import path patterns.
+				patternContext := gbuild.NewBuildContext("", options.BuildTags)
+				pkgs := (&gotool.Context{BuildContext: *patternContext}).ImportPaths(args)
+
+				for _, pkgPath := range pkgs {
+					if s.Watcher != nil {
+						pkg, err := gbuild.NewBuildContext(s.InstallSuffix(), options.BuildTags).Import(pkgPath, "", build.FindOnly)
+						errors.Panic(err)
+						errors.Panic(s.Watcher.Add(pkg.Dir))
+					}
+
+					pkg, err := gbuild.Import(pkgPath, 0, s.InstallSuffix(), options.BuildTags)
+					errors.Panic(err)
+
+					archive, err := s.BuildPackage(pkg)
+					errors.Panic(err)
+
+					if len(pkgs) == 1 { // Only consider writing output if single package specified.
+						if pkgObj == "" {
+							pkgObj = filepath.Base(pkg.Dir) + ".js"
+						}
+
+						if pkg.IsCommand() && !pkg.UpToDate {
+							errors.Panic(s.WriteCommandPackage(archive, pkgObj))
+						}
+					}
+				}
+			}
+
 			for {
 				s := gbuild.NewSession(options)
-
-				err := func() error {
-					// Handle "gopherjs build [files]" ad-hoc package mode.
-					if len(args) > 0 && (strings.HasSuffix(args[0], ".go") || strings.HasSuffix(args[0], ".inc.js")) {
-						for _, arg := range args {
-							if !strings.HasSuffix(arg, ".go") && !strings.HasSuffix(arg, ".inc.js") {
-								return fmt.Errorf("named files must be .go or .inc.js files")
-							}
-						}
-						if pkgObj == "" {
-							basename := filepath.Base(args[0])
-							pkgObj = basename[:len(basename)-3] + ".js"
-						}
-						names := make([]string, len(args))
-						for i, name := range args {
-							name = filepath.ToSlash(name)
-							names[i] = name
-							if s.Watcher != nil {
-								s.Watcher.Add(name)
-							}
-						}
-						err := s.BuildFiles(args, pkgObj, currentDirectory)
-						return err
-					}
-
-					// Expand import path patterns.
-					patternContext := gbuild.NewBuildContext("", options.BuildTags)
-					pkgs := (&gotool.Context{BuildContext: *patternContext}).ImportPaths(args)
-
-					for _, pkgPath := range pkgs {
-						if s.Watcher != nil {
-							pkg, err := gbuild.NewBuildContext(s.InstallSuffix(), options.BuildTags).Import(pkgPath, "", build.FindOnly)
-							if err != nil {
-								return err
-							}
-							s.Watcher.Add(pkg.Dir)
-						}
-						pkg, err := gbuild.Import(pkgPath, 0, s.InstallSuffix(), options.BuildTags)
-						if err != nil {
-							return err
-						}
-						archive, err := s.BuildPackage(pkg)
-						if err != nil {
-							return err
-						}
-						if len(pkgs) == 1 { // Only consider writing output if single package specified.
-							if pkgObj == "" {
-								pkgObj = filepath.Base(pkg.Dir) + ".js"
-							}
-							if pkg.IsCommand() && !pkg.UpToDate {
-								if err := s.WriteCommandPackage(archive, pkgObj); err != nil {
-									return err
-								}
-							}
-						}
-					}
-					return nil
-				}()
-				exitCode := handleError(err, options, nil)
-
-				if s.Watcher == nil {
-					os.Exit(exitCode)
-				}
+				errors.ErrHandle(errors.Try(_func)(s), func(err *errors.Err) {
+					err.P()
+					//exitCode := handleError(err.Err(), options, nil)
+					//if s.Watcher == nil {
+					//	os.Exit(exitCode)
+					//}
+				})
 				s.WaitForChange()
 			}
 		},

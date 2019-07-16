@@ -45,15 +45,10 @@ func init() {
 
 			options.BuildTags = strings.Fields(tags)
 			dirs := append(filepath.SplitList(build.Default.GOPATH), build.Default.GOROOT)
-			var root string
 
-			if len(args) > 1 {
-				os.Exit(1)
-			}
+			errors.T(len(args) != 1, "root num error")
 
-			if len(args) == 1 {
-				root = args[0]
-			}
+			root := args[0]
 
 			sourceFiles := http.FileServer(serveCommandFileSystem{
 				serveRoot:  root,
