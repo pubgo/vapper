@@ -89,69 +89,66 @@ func (t *Vapper) handleInject(_in interface{}) {
 			args = append(args, t.cfg)
 		}
 
-		_, ok := _Init.Interface().(flux.StoreInterface)
-		fmt.Println("StoreInterface", ok)
-		fmt.Println(_Init.Interface())
-		if ok {
-			fmt.Println("StoreInterface")
-			for j := 0; j < len(t.stores); j++ {
-				fmt.Println(_t == reflect.TypeOf(t.stores[j]))
-				fmt.Println(reflect.TypeOf(t.stores[j]).String())
-				fmt.Println(reflect.TypeOf(t.stores[j]).Kind())
+		for j := 0; j < len(t.stores); j++ {
+			fmt.Println(_t == reflect.TypeOf(t.stores[j]))
+			fmt.Println(reflect.TypeOf(t.stores[j]).String())
+			fmt.Println(reflect.TypeOf(t.stores[j]).Kind())
 
-				if _t == reflect.TypeOf(t.stores[j]) {
-					args = append(args, reflect.ValueOf(t.stores[j]))
-					break
-				}
+			if _t == reflect.TypeOf(t.stores[j]) {
+				args = append(args, reflect.ValueOf(t.stores[j]))
+				break
 			}
+		}
+
+		fmt.Println(args)
+		errors.T(_Init.Type().NumIn() != len(args), "inject params not match")
+		_Init.Call(args)
+	}
+
+	// Start causes the router to listen for changes to window.location and
+	// trigger the appropriate handler whenever there is a change.
+	func(t *Vapper) Start()
+	{
+		// inject app,store,config
+		for _, d := range t.routes {
+			t.handleInject(d.handler)
+		}
+
+		for _, d := range t.stores {
+			t.handleInject(d)
+		}
+
+		// watch store
+		t.watch()
+
+		// watch router
+		if browserSupportsPushState && !t.ForceHashURL {
+			t.pathChanged(getPath(), true)
+			t.watchHistory()
+		} else {
+			t.setInitialHash()
+			t.watchHash()
+		}
+		if t.ShouldInterceptLinks {
+			t.InterceptLinks()
+		}
+
+		pt := Window.Get("location").Get("pathname").String()
+		if t.CanNavigate(pt) {
+			t.Navigate(pt)
+		} else {
+			t.Navigate("/")
 		}
 	}
 
-	errors.T(_Init.Type().NumIn() != len(args), "inject params not match")
-	_Init.Call(args)
-}
-
-// Start causes the router to listen for changes to window.location and
-// trigger the appropriate handler whenever there is a change.
-func (t *Vapper) Start() {
-	// inject app,store,config
-	for _, d := range t.routes {
-		t.handleInject(d.handler)
+	// Stop causes the router to stop listening for changes, and therefore
+	// the router will not trigger any more router.Handler functions.
+	func
+	Stop()
+	{
+		if browserSupportsPushState && !_vapper.ForceHashURL {
+			dom.Window.Set("onpopstate", nil)
+		} else {
+			dom.Window.Set("onhashchange", nil)
+		}
 	}
-
-	for _, d := range t.stores {
-		t.handleInject(d)
-	}
-
-	// watch store
-	t.watch()
-
-	// watch router
-	if browserSupportsPushState && !t.ForceHashURL {
-		t.pathChanged(getPath(), true)
-		t.watchHistory()
-	} else {
-		t.setInitialHash()
-		t.watchHash()
-	}
-	if t.ShouldInterceptLinks {
-		t.InterceptLinks()
-	}
-
-	pt := Window.Get("location").Get("pathname").String()
-	if t.CanNavigate(pt) {
-		t.Navigate(pt)
-	} else {
-		t.Navigate("/")
-	}
-}
-
-// Stop causes the router to stop listening for changes, and therefore
-// the router will not trigger any more router.Handler functions.
-func Stop() {
-	if browserSupportsPushState && !_vapper.ForceHashURL {
-		dom.Window.Set("onpopstate", nil)
-	} else {
-		dom.Window.Set("onhashchange", nil)
-	}
-}
