@@ -5,7 +5,17 @@ import (
 	. "github.com/siongui/godom"
 	dom "github.com/siongui/godom"
 	"reflect"
+	"sync"
 )
+
+var _app sync.Once
+var _vapper *Vapper
+func Default() *Vapper {
+	_app.Do(func() {
+		_vapper = &Vapper{}
+	})
+	return _vapper
+}
 
 type Vapper struct {
 	dispatcher flux.DispatcherInterface

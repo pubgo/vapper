@@ -2,7 +2,7 @@ package vapper
 
 import "reflect"
 
-func (t *Vapper) InitConfig(cfg interface{}) {
+func (t *Vapper) RegisterConfig(cfg interface{}) {
 	if cfg == nil {
 		panic("config error")
 	}

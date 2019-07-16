@@ -4,7 +4,7 @@ import (
 	"github.com/dave/flux"
 )
 
-func (t *Vapper) InitStore(store flux.StoreInterface) {
+func (t *Vapper) RegisterStore(store flux.StoreInterface) {
 	if store == nil {
 		panic("store error")
 	}
