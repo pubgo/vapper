@@ -4,9 +4,9 @@ import (
 	"github.com/dave/flux"
 )
 
-func (t *Vapper) RegisterStore(store flux.StoreInterface) {
+func RegisterStore(store flux.StoreInterface) {
 	if store == nil {
 		panic("store error")
 	}
-	t.stores = append(t.stores, store)
+	_vapper.stores = append(_vapper.stores, store)
 }

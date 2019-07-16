@@ -2,9 +2,10 @@ package vapper
 
 import "reflect"
 
-func (t *Vapper) RegisterConfig(cfg interface{}) {
+func RegisterConfig(cfg interface{}) {
 	if cfg == nil {
 		panic("config error")
 	}
-	t.cfg = reflect.ValueOf(cfg)
+
+	_vapper.cfg = reflect.ValueOf(cfg)
 }
