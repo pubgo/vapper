@@ -89,7 +89,10 @@ func (t *Vapper) handleInject(_in interface{}) {
 			args = append(args, t.cfg)
 		}
 
-		if _, ok := _Init.Interface().(flux.StoreInterface); ok {
+		_, ok := _Init.Interface().(flux.StoreInterface)
+		fmt.Println("StoreInterface", ok)
+		fmt.Println(_Init.Interface())
+		if ok {
 			fmt.Println("StoreInterface")
 			for j := 0; j < len(t.stores); j++ {
 				fmt.Println(_t == reflect.TypeOf(t.stores[j]))
