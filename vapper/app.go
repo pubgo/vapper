@@ -3,7 +3,6 @@ package vapper
 import (
 	"fmt"
 	"github.com/dave/flux"
-	"github.com/pubgo/assert"
 	"github.com/pubgo/errors"
 	. "github.com/siongui/godom"
 	dom "github.com/siongui/godom"
@@ -97,7 +96,7 @@ func (t *Vapper) handleInject(_in interface{}) {
 		}
 	}
 
-	assert.T(_Init.Type().NumIn() != len(args), "inject params not match")
+	errors.T(_Init.Type().NumIn() != len(args), "inject params not match")
 	_Init.Call(args)
 }
 
