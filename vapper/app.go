@@ -99,56 +99,54 @@ func (t *Vapper) handleInject(_in interface{}) {
 				break
 			}
 		}
-
-		fmt.Println(args)
-		errors.T(_Init.Type().NumIn() != len(args), "inject params not match")
-		_Init.Call(args)
 	}
 
-	// Start causes the router to listen for changes to window.location and
-	// trigger the appropriate handler whenever there is a change.
-	func(t *Vapper) Start()
-	{
-		// inject app,store,config
-		for _, d := range t.routes {
-			t.handleInject(d.handler)
-		}
+	fmt.Println(args)
+	errors.T(_Init.Type().NumIn() != len(args), "inject params not match")
+	_Init.Call(args)
+}
 
-		for _, d := range t.stores {
-			t.handleInject(d)
-		}
-
-		// watch store
-		t.watch()
-
-		// watch router
-		if browserSupportsPushState && !t.ForceHashURL {
-			t.pathChanged(getPath(), true)
-			t.watchHistory()
-		} else {
-			t.setInitialHash()
-			t.watchHash()
-		}
-		if t.ShouldInterceptLinks {
-			t.InterceptLinks()
-		}
-
-		pt := Window.Get("location").Get("pathname").String()
-		if t.CanNavigate(pt) {
-			t.Navigate(pt)
-		} else {
-			t.Navigate("/")
-		}
+// Start causes the router to listen for changes to window.location and
+// trigger the appropriate handler whenever there is a change.
+func (t *Vapper) Start() {
+	// inject app,store,config
+	for _, d := range t.routes {
+		t.handleInject(d.handler)
 	}
 
-	// Stop causes the router to stop listening for changes, and therefore
-	// the router will not trigger any more router.Handler functions.
-	func
-	Stop()
-	{
-		if browserSupportsPushState && !_vapper.ForceHashURL {
-			dom.Window.Set("onpopstate", nil)
-		} else {
-			dom.Window.Set("onhashchange", nil)
-		}
+	for _, d := range t.stores {
+		t.handleInject(d)
 	}
+
+	// watch store
+	t.watch()
+
+	// watch router
+	if browserSupportsPushState && !t.ForceHashURL {
+		t.pathChanged(getPath(), true)
+		t.watchHistory()
+	} else {
+		t.setInitialHash()
+		t.watchHash()
+	}
+	if t.ShouldInterceptLinks {
+		t.InterceptLinks()
+	}
+
+	pt := Window.Get("location").Get("pathname").String()
+	if t.CanNavigate(pt) {
+		t.Navigate(pt)
+	} else {
+		t.Navigate("/")
+	}
+}
+
+// Stop causes the router to stop listening for changes, and therefore
+// the router will not trigger any more router.Handler functions.
+func Stop() {
+	if browserSupportsPushState && !_vapper.ForceHashURL {
+		dom.Window.Set("onpopstate", nil)
+	} else {
+		dom.Window.Set("onhashchange", nil)
+	}
+}
