@@ -1,7 +1,6 @@
 package vapper
 
 import (
-	"fmt"
 	"github.com/dave/flux"
 	"github.com/pubgo/errors"
 	. "github.com/siongui/godom"
@@ -51,35 +50,17 @@ func (t *Vapper) handleInject(_in interface{}) {
 
 	_hn := reflect.ValueOf(_in)
 	if !_hn.IsValid() || _hn.IsNil() {
-		fmt.Println(_hn.String())
-		fmt.Println(_hn.Kind())
-		fmt.Println(_hn.Type().String())
 		panic("func inject error")
 	}
-
-	fmt.Println(_hn.String())
-	fmt.Println(_hn.Kind())
-	fmt.Println(_hn.Type().String())
 
 	_Init := _hn.MethodByName("Init")
 	if !_Init.IsValid() || _Init.IsNil() {
 		return
 	}
 
-	fmt.Println(_Init.String())
-	fmt.Println(_Init.Kind())
-	fmt.Println(_Init.Type().String())
-	fmt.Println(_Init.Type().NumIn())
-
 	var args []reflect.Value
 	for i := 0; i < _Init.Type().NumIn(); i++ {
 		_t := _Init.Type().In(i)
-
-		fmt.Println(_t.String())
-		fmt.Println(_t.Kind())
-		fmt.Println(_t == reflect.TypeOf(t))
-		fmt.Println(reflect.TypeOf(t).String())
-		fmt.Println(reflect.TypeOf(t).Kind())
 
 		if _t == reflect.TypeOf(t) {
 			args = append(args, reflect.ValueOf(t))
@@ -90,9 +71,6 @@ func (t *Vapper) handleInject(_in interface{}) {
 		}
 
 		for j := 0; j < len(t.stores); j++ {
-			fmt.Println(_t == reflect.TypeOf(t.stores[j]))
-			fmt.Println(reflect.TypeOf(t.stores[j]).String())
-			fmt.Println(reflect.TypeOf(t.stores[j]).Kind())
 
 			if _t == reflect.TypeOf(t.stores[j]) {
 				args = append(args, reflect.ValueOf(t.stores[j]))
@@ -101,7 +79,6 @@ func (t *Vapper) handleInject(_in interface{}) {
 		}
 	}
 
-	fmt.Println(args)
 	errors.T(_Init.Type().NumIn() != len(args), "inject params not match")
 	_Init.Call(args)
 }
