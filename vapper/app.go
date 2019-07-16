@@ -3,6 +3,8 @@ package vapper
 import (
 	"fmt"
 	"github.com/dave/flux"
+	"github.com/pubgo/assert"
+	"github.com/pubgo/errors"
 	. "github.com/siongui/godom"
 	dom "github.com/siongui/godom"
 	"reflect"
@@ -46,12 +48,14 @@ type Vapper struct {
 }
 
 func (t *Vapper) handleInject(_in interface{}) {
+	defer errors.Assert()
+
 	_hn := reflect.ValueOf(_in)
 	if !_hn.IsValid() || _hn.IsNil() {
 		fmt.Println(_hn.String())
 		fmt.Println(_hn.Kind())
 		fmt.Println(_hn.Type().String())
-		panic(_in)
+		panic("func inject error")
 	}
 
 	_Init := _hn.MethodByName("Init")
@@ -59,15 +63,15 @@ func (t *Vapper) handleInject(_in interface{}) {
 		return
 	}
 
-	var args = make([]reflect.Value, _Init.Type().NumIn())
+	var args []reflect.Value
 	for i := 0; i < _Init.Type().NumIn(); i++ {
 		_t := _Init.Type().In(i)
 		if _t == reflect.TypeOf(t) {
-			args[i] = reflect.ValueOf(t)
+			args = append(args, reflect.ValueOf(t))
 		}
 
 		if _t == t.cfg.Type() {
-			args[i] = t.cfg
+			args = append(args, t.cfg)
 		}
 
 		if _, ok := _Init.Interface().(flux.StoreInterface); ok {
@@ -79,6 +83,8 @@ func (t *Vapper) handleInject(_in interface{}) {
 			}
 		}
 	}
+
+	assert.T(_Init.Type().NumIn() != len(args), "inject params not match")
 	_Init.Call(args)
 }
 
