@@ -13,7 +13,6 @@ import (
 )
 
 func initBuildCmd(cmd *cobra.Command) *cobra.Command {
-
 	cmd.Flags().StringVarP(&pkgObj, "output", "o", "", "output file")
 	cmd.Flags().BoolVarP(&options.Verbose, "verbose", "v", false, "print the names of packages as they are compiled")
 	cmd.Flags().BoolVarP(&options.Quiet, "quiet", "q", false, "suppress non-fatal warnings")
@@ -22,7 +21,6 @@ func initBuildCmd(cmd *cobra.Command) *cobra.Command {
 	cmd.Flags().StringVar(&tags, "tags", "", "a list of build tags to consider satisfied during the build")
 	cmd.Flags().BoolVar(&options.MapToLocalDisk, "localmap", false, "use local paths for sourcemap")
 	cmd.Flags().BoolVarP(&options.Watch, "watch", "w", false, "watch for changes to the source files")
-
 	return cmd
 }
 

@@ -128,6 +128,7 @@ func (fs serveCommandFileSystem) Open(requestName string) (http.File, error) {
 
 				return nil
 			}()
+
 			handleError(err, fs.options, browserErrors)
 			if err != nil {
 				buf = browserErrors

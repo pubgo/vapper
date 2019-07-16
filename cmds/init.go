@@ -50,7 +50,7 @@ var directories = []string{
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:     "init",
-	Example: "./factor init example",
+	Example: "vapper init example",
 	Short:   "initialize a new factor application",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
