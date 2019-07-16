@@ -1,11 +1,11 @@
 package vapper
 
-import "reflect"
+import (
+	"github.com/pubgo/errors"
+	"reflect"
+)
 
-func RegisterConfig(cfg interface{}) {
-	if cfg == nil {
-		panic("config error")
-	}
-
+func Config(cfg interface{}) {
+	errors.T(errors.IsNone(cfg), "please init config")
 	_vapper.cfg = reflect.ValueOf(cfg)
 }

@@ -10,6 +10,7 @@ import (
 
 var _app sync.Once
 var _vapper *Vapper
+
 func Default() *Vapper {
 	_app.Do(func() {
 		_vapper = &Vapper{}
@@ -79,10 +80,8 @@ func (t *Vapper) handleInject(_in interface{}) {
 
 // Start causes the router to listen for changes to window.location and
 // trigger the appropriate handler whenever there is a change.
-func Start(fn func(app *Vapper)) {
-	t := &Vapper{}
-	// init config, store and router
-	fn(t)
+func Start() {
+	t := _vapper
 
 	// inject app,store,config
 	for _, d := range t.routes {
@@ -118,8 +117,8 @@ func Start(fn func(app *Vapper)) {
 
 // Stop causes the router to stop listening for changes, and therefore
 // the router will not trigger any more router.Handler functions.
-func (t *Vapper) Stop() {
-	if browserSupportsPushState && !t.ForceHashURL {
+func Stop() {
+	if browserSupportsPushState && !_vapper.ForceHashURL {
 		dom.Window.Set("onpopstate", nil)
 	} else {
 		dom.Window.Set("onhashchange", nil)

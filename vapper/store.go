@@ -2,11 +2,10 @@ package vapper
 
 import (
 	"github.com/dave/flux"
+	"github.com/pubgo/errors"
 )
 
-func RegisterStore(store flux.StoreInterface) {
-	if store == nil {
-		panic("store error")
-	}
+func Store(store flux.StoreInterface) {
+	errors.T(errors.IsNone(store), "please init store")
 	_vapper.stores = append(_vapper.stores, store)
 }

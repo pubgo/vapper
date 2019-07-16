@@ -18,7 +18,7 @@ func Route(path string, handler Handler) {
 	_vapper.routes = append(_vapper.routes, newRoute(path, handler))
 }
 
-func (t *Vapper) NotFound(handler Handler) {
+func NotFound(handler Handler) {
 }
 
 // browserSupportsPushState will be true if the current browser
