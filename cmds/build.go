@@ -24,26 +24,25 @@ import (
 )
 
 // buildCmd represents the build command
-var buildCmd = &cobra.Command{
-	Use:   "build",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
+
+func init() {
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "transpiler",
+		Short: "A brief description of your command",
+		Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
 Cobra is a CLI library for Go that empowers a¬pplications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, args []string) {
 
-		log.Println("Building Application")
-		cwd, err := os.Getwd()
-		errors.Panic(err)
+			log.Println("Building Application")
+			cwd, err := os.Getwd()
+			errors.Panic(err)
 
-		transpiler.ProcessAll(filepath.Join(cwd, "components"))
-		transpiler.ProcessAll(filepath.Join(cwd, "routes"))
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(buildCmd)
+			transpiler.ProcessAll(filepath.Join(cwd, "components"))
+			transpiler.ProcessAll(filepath.Join(cwd, "routes"))
+		},
+	})
 }

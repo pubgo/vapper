@@ -1,0 +1,56 @@
+[app]
+web_port=8080
+http_port=8081
+resp_port=8082
+rpc_port=8082
+name="db2rest"
+debug=true
+env="dev"
+
+[db]
+prefix="dr"
+driver="mysql"
+db_name="mydb"
+url="root:123456@(localhost:3306)/mydb"
+max_open_conns=2000
+max_idle_conns=1000
+max_lefttime=10
+
+
+[log]
+level="debug"
+timestamp_field_name = "time"
+level_field_name = "level"
+message_field_name = "msg"
+error_field_name="error"
+caller_field_name="caller"
+error_stack_field_name="stack"
+time_field_format="2006-01-02 15:04:05 07:00"
+
+[[log.writers]]
+type=""
+url=""
+
+[templates]
+slack = """
+任务ID:  {{.TaskId}}
+任务名称: {{.TaskName}}
+状态:    {{.Status}}
+执行结果: {{.Result}}
+"""
+
+email = """
+任务ID:  {{.TaskId}}
+任务名称: {{.TaskName}}
+状态:    {{.Status}}
+执行结果: {{.Result}}
+"""
+
+webhook = """
+{
+  "task_id": "{{.TaskId}}",
+  "task_name": "{{.TaskName}}",
+  "status": "{{.Status}}",
+  "result": "{{.Result}}"
+}
+"""
