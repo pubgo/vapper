@@ -45,6 +45,7 @@ type Vapper struct {
 	listener func(event dom.Event)
 }
 
+// handleInject inject config and stores
 func (t *Vapper) handleInject(_in interface{}) {
 	defer errors.Assert()
 
@@ -71,7 +72,6 @@ func (t *Vapper) handleInject(_in interface{}) {
 		}
 
 		for j := 0; j < len(t.stores); j++ {
-
 			if _t == reflect.TypeOf(t.stores[j]) {
 				args = append(args, reflect.ValueOf(t.stores[j]))
 				break
