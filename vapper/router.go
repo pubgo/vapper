@@ -1,8 +1,3 @@
-// Copyright 2015 Alex Browne and Soroush Pour.
-// Allrights reserved. Use of this source code is
-// governed by the MIT license, which can be found
-// in the LICENSE file.
-
 package vapper
 
 import (
@@ -13,6 +8,18 @@ import (
 	"regexp"
 	"strings"
 )
+
+// HandleFunc will cause the router to call f whenever window.location.pathname
+// (or window.location.hash, if history.pushState is not supported) matches path.
+// path can contain any number of parameters which are denoted with curly brackets.
+// So, for example, a path argument of "users/{id}" will be triggered when the user
+// visits users/123 and will call the handler function with params["id"] = "123".
+func (t *Vapper) Route(path string, handler Handler) {
+	t.routes = append(t.routes, newRoute(path, handler))
+}
+
+func (t *Vapper) NotFound(handler Handler) {
+}
 
 // browserSupportsPushState will be true if the current browser
 // supports history.pushState and the onpopstate event.
@@ -25,30 +32,6 @@ func init() {
 	browserSupportsPushState = (dom.Window.Get("onpopstate") != js.Undefined) &&
 		(dom.Window.Get("history") != js.Undefined) &&
 		(dom.Window.Get("history").Get("pushState") != js.Undefined)
-}
-
-// Router is responsible for handling routes. If history.pushState is
-// supported, it uses it to navigate from page to page and will listen
-// to the "onpopstate" event. Otherwise, it sets the hash component of the
-// url and listens to changes via the "onhashchange" event.
-type Router struct {
-	// routes is the set of routes for this router.
-	routes []*route
-	// ShouldInterceptLinks tells the router whether or not to intercept click events
-	// on links and call the Navigate method instead of the default behavior.
-	// If it is set to true, the router will automatically intercept links when
-	// Start, Navigate, or Back are called, or when the onpopstate event is triggered.
-	ShouldInterceptLinks bool
-	// ForceHashURL tells the router to use the hash component of the url to
-	// represent different routes, even if history.pushState is supported.
-	ForceHashURL bool
-	// Verbose determines whether or not the router will log to console.log.
-	// If true, the router will log a message if, e.g., a match cannot be found for
-	// a particular path.
-	Verbose bool
-	// listener is the js.Object representation of a listener callback.
-	// It is required in order to use the RemoveEventListener method
-	listener func(event dom.Event)
 }
 
 // Context is used as an argument to Handlers
@@ -73,7 +56,7 @@ type Context struct {
 // handler functions access to path parameters and other important
 // information.
 type Handler interface {
-	Handle() func(ctx *Context)
+	Handle(ctx *Context)
 }
 
 // route is a representation of a specific route
@@ -85,15 +68,6 @@ type route struct {
 	paramNames []string
 	// handler called when route is matched
 	handler Handler
-}
-
-// HandleFunc will cause the router to call f whenever window.location.pathname
-// (or window.location.hash, if history.pushState is not supported) matches path.
-// path can contain any number of parameters which are denoted with curly brackets.
-// So, for example, a path argument of "users/{id}" will be triggered when the user
-// visits users/123 and will call the handler function with params["id"] = "123".
-func (r *Router) HandleFunc(path string, handler Handler) {
-	r.routes = append(r.routes, newRoute(path, handler))
 }
 
 // newRoute returns a route with the given arguments. paramNames and regex
@@ -121,51 +95,26 @@ func newRoute(path string, handler Handler) *route {
 	return route
 }
 
-// Start causes the router to listen for changes to window.location and
-// trigger the appropriate handler whenever there is a change.
-func (r *Router) Start() {
-	if browserSupportsPushState && !r.ForceHashURL {
-		r.pathChanged(getPath(), true)
-		r.watchHistory()
-	} else {
-		r.setInitialHash()
-		r.watchHash()
-	}
-	if r.ShouldInterceptLinks {
-		r.InterceptLinks()
-	}
-}
-
-// Stop causes the router to stop listening for changes, and therefore
-// the router will not trigger any more router.Handler functions.
-func (r *Router) Stop() {
-	if browserSupportsPushState && !r.ForceHashURL {
-		dom.Window.Set("onpopstate", nil)
-	} else {
-		dom.Window.Set("onhashchange", nil)
-	}
-}
-
 // Navigate will trigger the handler associated with the given path
 // and update window.location accordingly. If the browser supports
 // history.pushState, that will be used. Otherwise, Navigate will
 // set the hash component of window.location to the given path.
-func (r *Router) Navigate(path string) {
-	if browserSupportsPushState && !r.ForceHashURL {
+func (t *Vapper) Navigate(path string) {
+	if browserSupportsPushState && !t.ForceHashURL {
 		pushState(path)
-		r.pathChanged(path, false)
+		t.pathChanged(path, false)
 	} else {
 		setHash(path)
 	}
-	if r.ShouldInterceptLinks {
-		r.InterceptLinks()
+	if t.ShouldInterceptLinks {
+		t.InterceptLinks()
 	}
 }
 
 // CanNavigate returns true if the specified path can be navigated by the
 // router, and false otherwise
-func (r *Router) CanNavigate(path string) bool {
-	if bestRoute, _, _ := r.findBestRoute(path); bestRoute != nil {
+func (t *Vapper) CanNavigate(path string) bool {
+	if bestRoute, _, _ := t.findBestRoute(path); bestRoute != nil {
 		return true
 	}
 	return false
@@ -174,10 +123,10 @@ func (r *Router) CanNavigate(path string) bool {
 // Back will cause the browser to go back to the previous page.
 // It has the same effect as the user pressing the back button,
 // and is just a wrapper around history.back()
-func (r *Router) Back() {
+func (t *Vapper) Back() {
 	dom.Window.Get("history").Call("back")
-	if r.ShouldInterceptLinks {
-		r.InterceptLinks()
+	if t.ShouldInterceptLinks {
+		t.InterceptLinks()
 	}
 }
 
@@ -190,7 +139,7 @@ func (r *Router) Back() {
 // onpopstate event is triggered. Even with r.ShouldInterceptLinks set to true, you
 // may still need to call this function if you change the DOM manually without
 // triggering a route.
-func (r *Router) InterceptLinks() {
+func (t *Vapper) InterceptLinks() {
 	for _, link := range dom.Document.QuerySelectorAll("links") {
 		href := link.GetAttribute("href")
 		switch {
@@ -210,14 +159,14 @@ func (r *Router) InterceptLinks() {
 
 		case strings.HasPrefix(href, "/"):
 			// These are relative links. The kind that we want to intercept.
-			if r.listener != nil {
+			if t.listener != nil {
 				// Remove the old listener (if any)
-				link.RemoveEventListener("click", r.listener)
+				link.RemoveEventListener("click", t.listener)
 				continue
 			}
 
-			r.listener = r.interceptLink
-			link.AddEventListener("click", r.listener)
+			t.listener = t.interceptLink
+			link.AddEventListener("click", t.listener)
 		}
 	}
 }
@@ -225,34 +174,34 @@ func (r *Router) InterceptLinks() {
 // interceptLink is intended to be used as a callback function. It stops
 // the default behavior of event and instead calls r.Navigate, passing through
 // the link's href property.
-func (r *Router) interceptLink(event dom.Event) {
+func (t *Vapper) interceptLink(event dom.Event) {
 	path := event.Target().GetAttribute("href")
 
 	// Only intercept the click event if we have a route which matches
 	// Otherwise, just do the default.
-	if bestRoute, _, _ := r.findBestRoute(path); bestRoute != nil {
+	if bestRoute, _, _ := t.findBestRoute(path); bestRoute != nil {
 		event.PreventDefault() // TODO - don't think this will work?
-		go r.Navigate(path)
+		go t.Navigate(path)
 	}
 }
 
 // setInitialHash will set hash to / if there is currently no hash.
-func (r *Router) setInitialHash() {
+func (t *Vapper) setInitialHash() {
 	if getHash() == "" {
 		setHash("/")
 	} else {
-		r.pathChanged(getPathFromHash(getHash()), true)
+		t.pathChanged(getPathFromHash(getHash()), true)
 	}
 }
 
 // pathChanged should be called whenever the path changes and will trigger
 // the appropriate handler. initial should be true iff this is the first
 // time the javascript is loaded on the page.
-func (r *Router) pathChanged(path string, initial bool) {
-	bestRoute, tokens, params := r.findBestRoute(path)
+func (t *Vapper) pathChanged(path string, initial bool) {
+	bestRoute, tokens, params := t.findBestRoute(path)
 	// If no routes match, we throw console error and no handlers are called
 	if bestRoute == nil {
-		if r.Verbose {
+		if t.Verbose {
 			log.Println("Could not find route to match: " + path)
 		}
 		return
@@ -267,7 +216,7 @@ func (r *Router) pathChanged(path string, initial bool) {
 	for i, token := range tokens {
 		c.Params[bestRoute.paramNames[i]] = token
 	}
-	bestRoute.handler(c)
+	bestRoute.handler.Handle(c)
 }
 
 // findBestRoute compares the given path against regex patterns of routes.
@@ -277,10 +226,10 @@ func (r *Router) pathChanged(path string, initial bool) {
 //   Route 2: /todos/{category}
 // And the path argument is "/todos/work", the bestRoute would be todos/work
 // because the string "work" matches the literal in Route 1.
-func (r Router) findBestRoute(path string) (bestRoute *route, tokens []string, params map[string][]string) {
+func (t Vapper) findBestRoute(path string) (bestRoute *route, tokens []string, params map[string][]string) {
 	parts := strings.SplitN(path, "?", 2)
 	leastParams := -1
-	for _, route := range r.routes {
+	for _, route := range t.routes {
 		matches := route.regex.FindStringSubmatch(parts[0])
 		if matches != nil {
 			if (leastParams == -1) || (len(matches) < leastParams) {
@@ -291,16 +240,16 @@ func (r Router) findBestRoute(path string) (bestRoute *route, tokens []string, p
 		}
 	}
 	if len(parts) > 1 {
-		params = r.parseQueryPart(parts[1])
+		params = t.parseQueryPart(parts[1])
 	}
 	return bestRoute, tokens, params
 }
 
 // parseQueryPart extracts query params from the query part of the URL
-func (r Router) parseQueryPart(queryPart string) (params map[string][]string) {
+func (t Vapper) parseQueryPart(queryPart string) (params map[string][]string) {
 	var err error
 	params, err = url.ParseQuery(queryPart)
-	if err != nil && r.Verbose {
+	if err != nil && t.Verbose {
 		// the URL spec allows things other than name/value pairs in the query
 		// part of the URL, so we optionally log a message
 		log.Printf("Error parsing query %v: %v", queryPart, err)
@@ -310,22 +259,22 @@ func (r Router) parseQueryPart(queryPart string) (params map[string][]string) {
 
 // watchHash listens to the onhashchange event and calls r.pathChanged when
 // it changes
-func (r *Router) watchHash() {
+func (t *Vapper) watchHash() {
 	dom.Window.AddEventListener("onhashchange", func(event dom.Event) {
 		go func() {
-			r.pathChanged(getPathFromHash(getHash()), false)
+			t.pathChanged(getPathFromHash(getHash()), false)
 		}()
 	})
 }
 
 // watchHistory listens to the onpopstate event and calls r.pathChanged when
 // it changes
-func (r *Router) watchHistory() {
+func (t *Vapper) watchHistory() {
 	dom.Window.AddEventListener("onpopstate", func(event dom.Event) {
 		go func() {
-			r.pathChanged(getPath(), false)
-			if r.ShouldInterceptLinks {
-				r.InterceptLinks()
+			t.pathChanged(getPath(), false)
+			if t.ShouldInterceptLinks {
+				t.InterceptLinks()
 			}
 		}()
 	})
