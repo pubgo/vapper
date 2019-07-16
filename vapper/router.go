@@ -14,11 +14,11 @@ import (
 // path can contain any number of parameters which are denoted with curly brackets.
 // So, for example, a path argument of "users/{id}" will be triggered when the user
 // visits users/123 and will call the handler function with params["id"] = "123".
-func Route(path string, handler Handler) {
-	_vapper.routes = append(_vapper.routes, newRoute(path, handler))
+func (t *Vapper) Route(path string, handler Handler) {
+	t.routes = append(t.routes, newRoute(path, handler))
 }
 
-func NotFound(handler Handler) {
+func (t *Vapper) NotFound(handler Handler) {
 }
 
 // browserSupportsPushState will be true if the current browser

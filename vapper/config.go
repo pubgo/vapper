@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-func Config(cfg interface{}) {
+func (t *Vapper) Config(cfg interface{}) {
 	errors.T(errors.IsNone(cfg), "please init config")
-	_vapper.cfg = reflect.ValueOf(cfg)
+	t.cfg = reflect.ValueOf(cfg)
 }

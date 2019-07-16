@@ -5,7 +5,7 @@ import (
 	"github.com/pubgo/errors"
 )
 
-func Store(store flux.StoreInterface) {
+func (t *Vapper) Store(store flux.StoreInterface) {
 	errors.T(errors.IsNone(store), "please init store")
-	_vapper.stores = append(_vapper.stores, store)
+	t.stores = append(t.stores, store)
 }
