@@ -29,8 +29,8 @@ func init() {
 			_file := fmt.Sprintf("cmds/%s.go", _cmd)
 			log.Info().Msgf("gen cmd file: %s", _file)
 
-			_cmd = strings.ToUpper(string(_cmd[0])) + _cmd[1:]
-			errors.Wrap(ioutil.WriteFile(_file, []byte(fmt.Sprintf(genCmdTpl, _cmd, _cmd, _cmd)), 0644), "gen cmd error")
+			_cmd1 := strings.ToUpper(string(_cmd[0])) + _cmd[1:]
+			errors.Wrap(ioutil.WriteFile(_file, []byte(fmt.Sprintf(genCmdTpl, _cmd1, _cmd, _cmd)), 0644), "gen cmd error")
 		},
 	}))
 }

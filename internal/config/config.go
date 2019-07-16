@@ -74,7 +74,7 @@ var once sync.Once
 
 func Default() *config {
 	once.Do(func() {
-		cfg = &config{Cfg: new(_cfg)}
+		cfg = &config{Cfg: new(config2.Cfg)}
 		cfg.Env = cnst.Env.Dev
 		cfg.LogLevel = zerolog.DebugLevel.String()
 		cfg.Debug = true

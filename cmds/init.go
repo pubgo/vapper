@@ -15,11 +15,21 @@
 package cmds
 
 import (
+	"bytes"
 	"fmt"
+	gbuild "github.com/gopherjs/gopherjs/build"
+	"github.com/gopherjs/gopherjs/compiler"
 	"github.com/pubgo/vapper/templates"
+	"go/build"
+	"go/scanner"
+	"go/types"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"syscall"
 	"text/template"
+	"time"
 
 	"github.com/gobuffalo/envy"
 	"github.com/pubgo/errors"
@@ -90,4 +100,119 @@ func writeTemplate(filePath string, templateName string) {
 
 func init() {
 	rootCmd.AddCommand(initCmd)
+}
+
+type fakeFile struct {
+	name string
+	size int
+	io.ReadSeeker
+}
+
+func newFakeFile(name string, content []byte) *fakeFile {
+	return &fakeFile{name: name, size: len(content), ReadSeeker: bytes.NewReader(content)}
+}
+
+func (f *fakeFile) Close() error {
+	return nil
+}
+
+func (f *fakeFile) Readdir(count int) ([]os.FileInfo, error) {
+	return nil, os.ErrInvalid
+}
+
+func (f *fakeFile) Stat() (os.FileInfo, error) {
+	return f, nil
+}
+
+func (f *fakeFile) Name() string {
+	return f.name
+}
+
+func (f *fakeFile) Size() int64 {
+	return int64(f.size)
+}
+
+func (f *fakeFile) Mode() os.FileMode {
+	return 0
+}
+
+func (f *fakeFile) ModTime() time.Time {
+	return time.Time{}
+}
+
+func (f *fakeFile) IsDir() bool {
+	return false
+}
+
+func (f *fakeFile) Sys() interface{} {
+	return nil
+}
+
+// handleError handles err and returns an appropriate exit code.
+// If browserErrors is non-nil, errors are written for presentation in browser.
+func handleError(err error, options *gbuild.Options, browserErrors *bytes.Buffer) int {
+	switch err := err.(type) {
+	case nil:
+		return 0
+	case compiler.ErrorList:
+		for _, entry := range err {
+			printError(entry, options, browserErrors)
+		}
+		return 1
+	case *exec.ExitError:
+		return err.Sys().(syscall.WaitStatus).ExitStatus()
+	default:
+		printError(err, options, browserErrors)
+		return 1
+	}
+}
+
+// printError prints err to Stderr with options. If browserErrors is non-nil, errors are also written for presentation in browser.
+func printError(err error, options *gbuild.Options, browserErrors *bytes.Buffer) {
+	e := sprintError(err)
+	options.PrintError("%s\n", e)
+	if browserErrors != nil {
+		fmt.Fprintln(browserErrors, `console.error("`+template.JSEscapeString(e)+`");`)
+	}
+}
+
+// sprintError returns an annotated error string without trailing newline.
+func sprintError(err error) string {
+	makeRel := func(name string) string {
+		if relname, err := filepath.Rel(currentDirectory, name); err == nil {
+			return relname
+		}
+		return name
+	}
+
+	switch e := err.(type) {
+	case *scanner.Error:
+		return fmt.Sprintf("%s:%d:%d: %s", makeRel(e.Pos.Filename), e.Pos.Line, e.Pos.Column, e.Msg)
+	case types.Error:
+		pos := e.Fset.Position(e.Pos)
+		return fmt.Sprintf("%s:%d:%d: %s", makeRel(pos.Filename), pos.Line, pos.Column, e.Msg)
+	default:
+		return fmt.Sprintf("%s", e)
+	}
+}
+
+var currentDirectory string
+
+func init() {
+	var err error
+	currentDirectory, err = os.Getwd()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	currentDirectory, err = filepath.EvalSymlinks(currentDirectory)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	gopaths := filepath.SplitList(build.Default.GOPATH)
+	if len(gopaths) == 0 {
+		fmt.Fprintf(os.Stderr, "$GOPATH not set. For more details see: go help gopath\n")
+		os.Exit(1)
+	}
 }

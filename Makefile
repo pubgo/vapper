@@ -9,5 +9,8 @@ run:  wasm
 b:
 	go build -o main .
 
+i:
+	go install
+
 jsgo:
 	echo https://compile.jsgo.io/pubgo/vapper
