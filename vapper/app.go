@@ -69,7 +69,8 @@ func (t *Vapper) handleInject(_in interface{}) {
 
 // Start causes the router to listen for changes to window.location and
 // trigger the appropriate handler whenever there is a change.
-func (t *Vapper) Start(fn func(app *Vapper)) {
+func Start(fn func(app *Vapper)) {
+	t := &Vapper{}
 	// init config, store and router
 	fn(t)
 
