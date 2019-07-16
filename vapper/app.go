@@ -77,6 +77,9 @@ func (t *Vapper) handleInject(_in interface{}) {
 
 		fmt.Println(_t.String())
 		fmt.Println(_t.Kind())
+		fmt.Println(_t == reflect.TypeOf(t))
+		fmt.Println(reflect.TypeOf(t).String())
+		fmt.Println(reflect.TypeOf(t).Kind())
 
 		if _t == reflect.TypeOf(t) {
 			args = append(args, reflect.ValueOf(t))
@@ -87,7 +90,12 @@ func (t *Vapper) handleInject(_in interface{}) {
 		}
 
 		if _, ok := _Init.Interface().(flux.StoreInterface); ok {
+			fmt.Println("StoreInterface")
 			for j := 0; j < len(t.stores); j++ {
+				fmt.Println(_t == reflect.TypeOf(t.stores[j]))
+				fmt.Println(reflect.TypeOf(t.stores[j]).String())
+				fmt.Println(reflect.TypeOf(t.stores[j]).Kind())
+
 				if _t == reflect.TypeOf(t.stores[j]) {
 					args = append(args, reflect.ValueOf(t.stores[j]))
 					break
