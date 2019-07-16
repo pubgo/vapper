@@ -58,14 +58,27 @@ func (t *Vapper) handleInject(_in interface{}) {
 		panic("func inject error")
 	}
 
+	fmt.Println(_hn.String())
+	fmt.Println(_hn.Kind())
+	fmt.Println(_hn.Type().String())
+
 	_Init := _hn.MethodByName("Init")
 	if !_Init.IsValid() || _Init.IsNil() {
 		return
 	}
 
+	fmt.Println(_Init.String())
+	fmt.Println(_Init.Kind())
+	fmt.Println(_Init.Type().String())
+	fmt.Println(_Init.Type().NumIn())
+
 	var args []reflect.Value
 	for i := 0; i < _Init.Type().NumIn(); i++ {
 		_t := _Init.Type().In(i)
+
+		fmt.Println(_t.String())
+		fmt.Println(_t.Kind())
+
 		if _t == reflect.TypeOf(t) {
 			args = append(args, reflect.ValueOf(t))
 		}
