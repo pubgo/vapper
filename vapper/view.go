@@ -9,7 +9,7 @@ import (
 
 type BaseView struct {
 	vecty.Core
-	app *Vapper
+	App *Vapper
 }
 
 // ReadyStateComplete call when ReadyState is Complete
@@ -17,7 +17,7 @@ func (t *BaseView) ReadyStateComplete() {
 }
 
 func (t *BaseView) Mount() {
-	t.app.Watch(t, func(done chan struct{}) {
+	t.App.Watch(t, func(done chan struct{}) {
 		defer close(done)
 		vecty.Rerender(t)
 	})
@@ -36,7 +36,7 @@ func (t *BaseView) Mount() {
 }
 
 func (t *BaseView) Unmount() {
-	t.app.Delete(t)
+	t.App.Delete(t)
 }
 
 func (t *BaseView) Render() vecty.ComponentOrHTML {
