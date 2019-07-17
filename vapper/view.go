@@ -11,11 +11,6 @@ type BaseView struct {
 	Ctx *Context
 }
 
-func (t *BaseView) Handle(ctx *Context) {
-	t.Ctx = ctx
-	vecty.RenderBody(t)
-}
-
 func (t *BaseView) Mount() {
 	t.App.Watch(t, func(done chan struct{}) {
 		defer close(done)
