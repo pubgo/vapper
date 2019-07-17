@@ -115,7 +115,6 @@ func (t *Vapper) Start() {
 	// inject app,store,config
 	for _, d := range t.routes {
 		t.handleInject(d.handler)
-		t.readyStateCompleteHandle(d.handler)
 	}
 
 	for _, d := range t.stores {
