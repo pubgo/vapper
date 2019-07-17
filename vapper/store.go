@@ -6,6 +6,6 @@ import (
 )
 
 func (t *Vapper) Store(store flux.StoreInterface) {
-	errors.T(errors.IsNone(store), "please init store")
+	errors.T(errors.IsNone(store), "store is null")
 	t.stores = append(t.stores, store)
 }

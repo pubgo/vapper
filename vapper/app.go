@@ -3,10 +3,10 @@ package vapper
 import (
 	"github.com/dave/flux"
 	"github.com/pubgo/errors"
-	. "github.com/siongui/godom"
 	dom "github.com/siongui/godom"
 	"reflect"
 	"sync"
+	"time"
 )
 
 var _app sync.Once
@@ -43,6 +43,32 @@ type Vapper struct {
 	// listener is the js.Object representation of a listener callback.
 	// It is required in order to use the RemoveEventListener method
 	listener func(event dom.Event)
+}
+
+func (t *Vapper) readyStateCompleteHandle(_in interface{}) {
+	defer errors.Assert()
+
+	_hn := reflect.ValueOf(_in)
+	if !_hn.IsValid() || _hn.IsNil() {
+		panic("func inject error")
+	}
+
+	_ReadyStateComplete := _hn.MethodByName("ReadyStateComplete")
+	if !_ReadyStateComplete.IsValid() || _ReadyStateComplete.IsNil() {
+		return
+	}
+
+	go func() {
+		for {
+			if dom.Document.Get("readyState").String() != "complete" {
+				time.Sleep(time.Millisecond * 10)
+				continue
+			}
+
+			_ReadyStateComplete.Call([]reflect.Value{})
+			return
+		}
+	}()
 }
 
 // handleInject inject config and stores
@@ -89,6 +115,7 @@ func (t *Vapper) Start() {
 	// inject app,store,config
 	for _, d := range t.routes {
 		t.handleInject(d.handler)
+		t.readyStateCompleteHandle(d.handler)
 	}
 
 	for _, d := range t.stores {
@@ -110,12 +137,12 @@ func (t *Vapper) Start() {
 		t.InterceptLinks()
 	}
 
-	pt := Window.Get("location").Get("pathname").String()
-	if t.CanNavigate(pt) {
-		t.Navigate(pt)
-	} else {
-		t.Navigate("/")
-	}
+	//pt := Window.Get("location").Get("pathname").String()
+	//if t.CanNavigate(pt) {
+	//	t.Navigate(pt)
+	//} else {
+	//	t.Navigate("/")
+	//}
 }
 
 // Stop causes the router to stop listening for changes, and therefore
