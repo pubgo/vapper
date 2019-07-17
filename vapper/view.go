@@ -8,6 +8,12 @@ import (
 type BaseView struct {
 	vecty.Core
 	App *Vapper
+	Ctx *Context
+}
+
+func (t *BaseView) Handle(ctx *Context) {
+	t.Ctx = ctx
+	vecty.RenderBody(t)
 }
 
 func (t *BaseView) Mount() {
