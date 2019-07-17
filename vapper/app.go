@@ -142,6 +142,19 @@ func (t *Vapper) Start() {
 	//} else {
 	//	t.Navigate("/")
 	//}
+
+	for _, d := range t.routes {
+		go func() {
+			for {
+				if dom.Document.Get("readyState").String() != "complete" {
+					time.Sleep(time.Millisecond * 10)
+					continue
+				}
+				d.handler.ReadyStateComplete()
+				return
+			}
+		}()
+	}
 }
 
 // Stop causes the router to stop listening for changes, and therefore
