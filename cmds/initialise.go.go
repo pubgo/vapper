@@ -3,15 +3,11 @@ package cmds
 import (
 	"archive/zip"
 	"bytes"
-	"cloud.google.com/go/storage"
 	"context"
 	"crypto/sha1"
 	"encoding/gob"
 	"encoding/json"
-	"flag"
 	"fmt"
-	"github.com/dave/services"
-	"github.com/dave/services/fileserver/gcsfileserver"
 	"github.com/dave/services/fileserver/localfileserver"
 	"github.com/pubgo/errors"
 	"github.com/spf13/cobra"
@@ -47,7 +43,10 @@ import (
 	"gopkg.in/src-d/go-billy.v4/osfs"
 )
 
+var frizzEnabled = false
+
 func initDisCmd(cmd *cobra.Command) *cobra.Command {
+	cmd.Flags().BoolVar(&frizzEnabled, "frizz", false, "Enable frizz mode")
 	return cmd
 }
 
@@ -62,19 +61,7 @@ func init() {
 
 			ctx := context.Background()
 
-			var fileserver services.Fileserver
-			if true {
-				fileserver = localfileserver.New(config.LocalFileserverTempDir, nil, nil, nil)
-			} else {
-				client, err := storage.NewClient(ctx)
-				errors.Panic(err)
-				defer errors.Panic(client.Close)
-				fileserver = gcsfileserver.New(client, config.Buckets)
-			}
-
-			var frizzEnabled bool
-			flag.BoolVar(&frizzEnabled, "frizz", false, "Enable frizz mode")
-			flag.Parse()
+			fileserver := localfileserver.New(config.LocalFileserverTempDir, nil, nil, nil)
 
 			storer := constor.New(ctx, fileserver, nil, 20)
 
@@ -91,7 +78,7 @@ func init() {
 			}
 
 			// Creates .js (compiled JS) and .ax (stripped GopherJS archive) files for all standard library package.
-			errors.Panic(CompileAndStoreJavascript(ctx, storer, packages, root, archives))
+			CompileAndStoreJavascript(ctx, storer, packages, root, archives)
 
 			// Creates the GopherJS prelude.
 			errors.Panic(Prelude(storer))
@@ -331,14 +318,14 @@ func ScanAndStoreTypes(ctx context.Context, storer *constor.Storer, stdPackages 
 	return nil
 }
 
-func CompileAndStoreJavascript(ctx context.Context, storer *constor.Storer, packages []string, root billy.Filesystem, archives map[string]map[bool]*compiler.Archive) error {
+func CompileAndStoreJavascript(ctx context.Context, storer *constor.Storer, packages []string, root billy.Filesystem, archives map[string]map[bool]*compiler.Archive) {
 	fmt.Println("Loading...")
 
 	s := session.New(nil, root, nil, nil, nil)
 
 	index := map[string]map[bool]string{}
 
-	buildAndSend := func(min bool) error {
+	buildAndSend := func(min bool) {
 		b := builder.New(s, &builder.Options{Unvendor: true, Initializer: true, Minify: min})
 
 		var minified = " (un-minified)"
@@ -349,24 +336,24 @@ func CompileAndStoreJavascript(ctx context.Context, storer *constor.Storer, pack
 		sent := map[string]bool{}
 		for _, p := range packages {
 			fmt.Println("Compiling:", p+minified)
-			if _, _, err := b.BuildImportPath(ctx, p); err != nil {
-				return err
-			}
+			_, _, err := b.BuildImportPath(ctx, p)
+			errors.Panic(err)
 
 			for _, archive := range b.Archives {
 				path := builder.UnvendorPath(archive.ImportPath)
+				_, file := filepath.Split(path)
+
 				if sent[path] {
 					continue
 				}
 				fmt.Println("Storing:", path+minified)
 
 				contents, hash, err := builder.GetPackageCode(ctx, archive, min, true)
-				if err != nil {
-					return err
-				}
+				errors.Panic(err)
+
 				storer.Add(constor.Item{
 					Message:   path + minified,
-					Name:      fmt.Sprintf("%s.%x.js", path, hash),
+					Name:      fmt.Sprintf("%s.%x.js", file, hash),
 					Contents:  contents,
 					Bucket:    config.Bucket[config.Pkg],
 					Mime:      constor.MimeJs,
@@ -391,12 +378,11 @@ func CompileAndStoreJavascript(ctx context.Context, storer *constor.Storer, pack
 				// be fiddly so I'm not going to do it now. TODO: revisit this?
 
 				buf := &bytes.Buffer{}
-				if err := compiler.WriteArchive(deployer.StripArchive(archive), buf); err != nil {
-					return err
-				}
+				errors.Panic(compiler.WriteArchive(deployer.StripArchive(archive), buf))
+
 				storer.Add(constor.Item{
 					Message:   path + " archive" + minified,
-					Name:      fmt.Sprintf("%s.%x.ax", path, hash),
+					Name:      fmt.Sprintf("%s.%x.ax", file, hash),
 					Contents:  buf.Bytes(),
 					Bucket:    config.Bucket[config.Pkg],
 					Mime:      constor.MimeBin,
@@ -417,16 +403,10 @@ func CompileAndStoreJavascript(ctx context.Context, storer *constor.Storer, pack
 				sent[path] = true
 			}
 		}
-
-		return nil
 	}
 
-	if err := buildAndSend(true); err != nil {
-		return err
-	}
-	if err := buildAndSend(false); err != nil {
-		return err
-	}
+	buildAndSend(true)
+	buildAndSend(false)
 
 	fmt.Println("Saving index...")
 	/*
@@ -447,12 +427,9 @@ func CompileAndStoreJavascript(ctx context.Context, storer *constor.Storer, pack
 			})
 		}
 	}))
-	if err := f.Save("../assets/std/index.go"); err != nil {
-		return err
-	}
-	fmt.Println("Done.")
 
-	return nil
+	errors.Panic(f.Save("../assets/std/index.go"))
+	fmt.Println("Done.")
 }
 
 func CreateAssetsZip(storer *constor.Storer, root billy.Filesystem, archives map[string]map[bool]*compiler.Archive) error {
@@ -647,6 +624,7 @@ const jsGoPrelude = `$load.prelude=function(){};`
 func getRootFilesystem() billy.Filesystem {
 	root := memfs.New()
 	errors.Panic(fsutil.Copy(root, "/goroot/src", osfs.New(build.Default.GOROOT), "/src"))
+	//errors.Panic(fsutil.Copy(root, "/goroot/src/github.com/gopherjs/gopherjs/js", osfs.New(build.Default.GOPATH), "/src/github.com/gopherjs/gopherjs/js"))
 	errors.Panic(fsutil.Copy(root, "/goroot/src/github.com/gopherjs/gopherjs/js", osfs.New(build.Default.GOPATH), "/src/github.com/gopherjs/gopherjs/js"))
 	errors.Panic(fsutil.Copy(root, "/goroot/src/github.com/gopherjs/gopherjs/nosync", osfs.New(build.Default.GOPATH), "/src/github.com/gopherjs/gopherjs/nosync"))
 	return root
