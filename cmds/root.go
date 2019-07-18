@@ -31,7 +31,7 @@ var rootCmd = &cobra.Command{
 		errors.Wrap(viper.BindPFlags(cmd.Flags()), "Flags Error")
 
 		viper.SetConfigType("toml")
-		viper.SetConfigName("config")
+		viper.SetConfigName("vapper")
 
 		homeDir := viper.GetString(homeFlag)
 		viper.AddConfigPath(homeDir)                          // search root directory

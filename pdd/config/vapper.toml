@@ -1,8 +1,5 @@
 [app]
-web_port=8080
-http_port=8081
-resp_port=8082
-rpc_port=8082
+port=3000
 name="db2rest"
 debug=true
 env="dev"

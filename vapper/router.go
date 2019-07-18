@@ -2,6 +2,7 @@ package vapper
 
 import (
 	"github.com/gopherjs/gopherjs/js"
+	"github.com/pubgo/errors"
 	dom "github.com/siongui/godom"
 	"log"
 	"net/url"
@@ -19,6 +20,9 @@ func (t *Vapper) Route(path string, handler Handler) {
 }
 
 func (t *Vapper) NotFound(handler Handler) {
+	t.notFoundRoute = &route{
+		handler: handler,
+	}
 }
 
 // browserSupportsPushState will be true if the current browser
@@ -205,6 +209,12 @@ func (t *Vapper) pathChanged(path string, initial bool) {
 		if t.Verbose {
 			log.Println("Could not find route to match: " + path)
 		}
+		t.notFoundRoute.handler.Handle(&Context{
+			Path:        path,
+			InitialLoad: initial,
+			Params:      map[string]string{},
+			QueryParams: params,
+		})
 		return
 	}
 	// Create the context and pass it through to the handler
@@ -247,15 +257,10 @@ func (t Vapper) findBestRoute(path string) (bestRoute *route, tokens []string, p
 }
 
 // parseQueryPart extracts query params from the query part of the URL
-func (t Vapper) parseQueryPart(queryPart string) (params map[string][]string) {
-	var err error
-	params, err = url.ParseQuery(queryPart)
-	if err != nil && t.Verbose {
-		// the URL spec allows things other than name/value pairs in the query
-		// part of the URL, so we optionally log a message
-		log.Printf("Error parsing query %v: %v", queryPart, err)
-	}
-	return
+func (t Vapper) parseQueryPart(queryPart string) map[string][]string {
+	params, err := url.ParseQuery(queryPart)
+	errors.T(err != nil && t.Verbose, "Error parsing query %s", queryPart)
+	return params
 }
 
 // watchHash listens to the onhashchange event and calls r.pathChanged when

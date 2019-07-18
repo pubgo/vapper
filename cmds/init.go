@@ -1,17 +1,3 @@
-// Copyright © 2018 NAME HERE <EMAIL ADDRESS>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package cmds
 
 import (
@@ -199,20 +185,14 @@ func sprintError(err error) string {
 var currentDirectory string
 
 func init() {
-	var err error
-	currentDirectory, err = os.Getwd()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	currentDirectory, err = filepath.EvalSymlinks(currentDirectory)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	gopaths := filepath.SplitList(build.Default.GOPATH)
-	if len(gopaths) == 0 {
-		fmt.Fprintf(os.Stderr, "$GOPATH not set. For more details see: go help gopath\n")
-		os.Exit(1)
-	}
+	_currentDirectory, err := os.Getwd()
+	errors.Panic(err)
+
+	_currentDirectory, err = filepath.EvalSymlinks(_currentDirectory)
+	errors.Panic(err)
+
+	currentDirectory = _currentDirectory
+
+	goPaths := filepath.SplitList(build.Default.GOPATH)
+	errors.T(len(goPaths) == 0, "$GOPATH not set. For more details see: go help gopath\n")
 }

@@ -24,9 +24,10 @@ type Vapper struct {
 	watcher    flux.WatcherInterface
 	notifier   flux.NotifierInterface
 
-	stores []flux.StoreInterface
-	routes []*route
-	cfg    reflect.Value
+	stores        []flux.StoreInterface
+	routes        []*route
+	notFoundRoute *route
+	cfg           reflect.Value
 
 	// ShouldInterceptLinks tells the router whether or not to intercept click events
 	// on links and call the Navigate method instead of the default behavior.
@@ -43,32 +44,6 @@ type Vapper struct {
 	// listener is the js.Object representation of a listener callback.
 	// It is required in order to use the RemoveEventListener method
 	listener func(event dom.Event)
-}
-
-func (t *Vapper) readyStateCompleteHandle(_in interface{}) {
-	defer errors.Assert()
-
-	_hn := reflect.ValueOf(_in)
-	if !_hn.IsValid() || _hn.IsNil() {
-		panic("func inject error")
-	}
-
-	_ReadyStateComplete := _hn.MethodByName("ReadyStateComplete")
-	if !_ReadyStateComplete.IsValid() || _ReadyStateComplete.IsNil() {
-		return
-	}
-
-	go func() {
-		for {
-			if dom.Document.Get("readyState").String() != "complete" {
-				time.Sleep(time.Millisecond * 10)
-				continue
-			}
-
-			_ReadyStateComplete.Call([]reflect.Value{})
-			return
-		}
-	}()
 }
 
 // handleInject inject config and stores
@@ -123,7 +98,7 @@ func (t *Vapper) Start() {
 
 	// watch store
 	t.watch()
-
+	
 	// watch router
 	if browserSupportsPushState && !t.ForceHashURL {
 		t.pathChanged(getPath(), true)

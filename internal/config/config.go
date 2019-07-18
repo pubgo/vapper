@@ -39,7 +39,7 @@ func (t *config) InitCfg() {
 		errors.T(!cnst.MatchEnv(t.Env), "the env value is not match,value(%s)", t.Env)
 	}
 
-	t.LogLevel = t.Cfg.Log.Level
+	t.LogLevel = zerolog.DebugLevel.String()
 	if _l, ok := os.LookupEnv("log_level"); ok {
 		t.LogLevel = _l
 		errors.T(!cnst.MatchLogLevel(t.LogLevel), "the env value is not match,value(%s)", _l)
