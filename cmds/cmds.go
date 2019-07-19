@@ -30,7 +30,7 @@ func init() {
 			log.Info().Msgf("gen cmd file: %s", _file)
 
 			_cmd1 := strings.ToUpper(string(_cmd[0])) + _cmd[1:]
-			errors.Wrap(ioutil.WriteFile(_file, []byte(fmt.Sprintf(genCmdTpl, _cmd1, _cmd, _cmd)), 0644), "gen cmd error")
+			errors.Wrap(ioutil.WriteFile(_file, []byte(fmt.Sprintf(genCmdTpl, _cmd1, _cmd1, _cmd, _cmd)), 0644), "gen cmd error")
 		},
 	}))
 }
@@ -49,7 +49,7 @@ func init%sCmd(cmd *cobra.Command) *cobra.Command {
 func init() {
 	rootCmd.AddCommand(init%sCmd(&cobra.Command{
 		Use:   "%s",
-		Short: "db2rest %s",
+		Short: "cmd %s",
 		Run: func(cmd *cobra.Command, args []string) {
 			defer errors.Assert()
 

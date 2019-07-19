@@ -238,6 +238,7 @@ github.com/shurcooL/httpfs v0.0.0-20181222201310-74dc9339e414 h1:IYVb70m/qpJGjyZ
 github.com/shurcooL/httpfs v0.0.0-20181222201310-74dc9339e414/go.mod h1:ZY1cvUeJuFPAdZ/B6v7RHavJWZn2YPVFQ1OSXhCGOkg=
 github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 h1:bUGsEnyNbVPw06Bs80sCeARAlK8lhwqGyi6UT8ymuGk=
 github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749/go.mod h1:ZY1cvUeJuFPAdZ/B6v7RHavJWZn2YPVFQ1OSXhCGOkg=
+github.com/shurcooL/httpgzip v0.0.0-20180522190206-b1c53ac65af9 h1:fxoFD0in0/CBzXoyNhMTjvBZYW6ilSnTw7N7y/8vkmM=
 github.com/shurcooL/httpgzip v0.0.0-20180522190206-b1c53ac65af9/go.mod h1:919LwcH0M7/W4fcZ0/jy0qGght1GIhqyS/EgWGH2j5Q=
 github.com/siongui/godom v0.0.0-20181006133514-8ba1cdb25192 h1:+H5lXLoRFOu/K/q8focJ8syTYjqEOaGwVJE6MpyKFPA=
 github.com/siongui/godom v0.0.0-20181006133514-8ba1cdb25192/go.mod h1:HlsL4IlMbIFM7fVEzc61bwE3Or1cNJzKZMDkO2xO9gA=

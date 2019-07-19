@@ -3,9 +3,7 @@ module github.com/pubgo/vapper
 go 1.12
 
 require (
-	cloud.google.com/go v0.34.0
 	github.com/aymerick/douceur v0.2.0
-	github.com/cespare/xxhash v1.1.0
 	github.com/dave/flux v0.0.0-20180702001202-0b08a93f243b
 	github.com/dave/frizz v0.0.0-20181022080000-c1df23557613
 	github.com/dave/jennifer v1.3.0
@@ -27,6 +25,7 @@ require (
 	github.com/pubgo/errors v0.3.2
 	github.com/rs/zerolog v1.14.3
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
+	github.com/shurcooL/httpgzip v0.0.0-20180522190206-b1c53ac65af9
 	github.com/siongui/godom v0.0.0-20181006133514-8ba1cdb25192
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
