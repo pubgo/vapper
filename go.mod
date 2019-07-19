@@ -3,9 +3,7 @@ module github.com/pubgo/vapper
 go 1.12
 
 require (
-	cloud.google.com/go v0.34.0
 	github.com/aymerick/douceur v0.2.0
-	github.com/cespare/xxhash v1.1.0
 	github.com/dave/flux v0.0.0-20180702001202-0b08a93f243b
 	github.com/dave/frizz v0.0.0-20181022080000-c1df23557613
 	github.com/dave/jennifer v1.3.0
