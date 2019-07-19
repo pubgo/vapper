@@ -21,6 +21,7 @@ func initDevCmd(cmd *cobra.Command) *cobra.Command {
 	cmd.Flags().BoolVar(&_build.Options.MapToLocalDisk, "localmap", false, "use local paths for sourcemap")
 	cmd.Flags().StringVarP(&_build.Addr, "http", "", ":8080", "HTTP bind address to serve")
 	cmd.Flags().BoolVarP(&_build.OnlyHash, "hash", "", true, "only hash path")
+	cmd.Flags().BoolVarP(&options.Watch, "watch", "w", true, "watch for changes to the source files")
 	return cmd
 }
 
@@ -31,7 +32,10 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			defer errors.Assert()
 
-			_build.RootPath = args[0]
+			_curDir, err := os.Getwd()
+			errors.Panic(err)
+
+			_build.RootPath = _curDir
 			_build.Build()
 		},
 	}))
