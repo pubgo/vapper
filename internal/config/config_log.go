@@ -28,6 +28,7 @@ func (t *config) InitLog() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, NoColor: false}).
 		With().
 		Caller().
+		Str("pkg", "vapper").
 		Logger()
 
 }

@@ -20,7 +20,7 @@ func initBuildCmd(cmd *cobra.Command) *cobra.Command {
 	cmd.Flags().BoolVar(&options.Color, "color", terminal.IsTerminal(int(os.Stderr.Fd())) && os.Getenv("TERM") != "dumb", "colored output")
 	cmd.Flags().StringVar(&tags, "tags", "", "a list of build tags to consider satisfied during the build")
 	cmd.Flags().BoolVar(&options.MapToLocalDisk, "localmap", false, "use local paths for sourcemap")
-	cmd.Flags().BoolVarP(&options.Watch, "watch", "w", false, "watch for changes to the source files")
+	cmd.Flags().BoolVarP(&options.Watch, "watch", "w", true, "watch for changes to the source files")
 	return cmd
 }
 

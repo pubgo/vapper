@@ -25,6 +25,7 @@ require (
 	github.com/pubgo/errors v0.3.2
 	github.com/rs/zerolog v1.14.3
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
+	github.com/shurcooL/httpgzip v0.0.0-20180522190206-b1c53ac65af9
 	github.com/siongui/godom v0.0.0-20181006133514-8ba1cdb25192
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
