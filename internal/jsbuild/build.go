@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/fsnotify/fsnotify"
 	"github.com/gobuffalo/envy"
 	gbuild "github.com/gopherjs/gopherjs/build"
 	"github.com/gopherjs/gopherjs/compiler"
@@ -79,16 +80,14 @@ func (t *_Build) Build() {
 
 	errors.T(sess.Watcher == nil, "file watcher error")
 	errors.Wrap(sess.Watcher.Add(t.RootPath), "watch error")
-
-	mainPkg, err := gbuild.Import(envy.CurrentPackage(), 0, sess.InstallSuffix(), t.Options.BuildTags)
-	errors.Wrap(err, "import error")
-
-	fmt.Print("11111\n\nn\n\n")
-	errors.T(!mainPkg.IsCommand(), "not main package")
-	errors.Wrap(sess.Watcher.Add(mainPkg.Dir), "watch main pkg error")
-
-	fmt.Print("222222\n\nn\n\n")
+	
 	for {
+		mainPkg, err := gbuild.Import(envy.CurrentPackage(), 0, sess.InstallSuffix(), t.Options.BuildTags)
+		errors.Wrap(err, "import error")
+
+		errors.T(!mainPkg.IsCommand(), "not main package")
+		errors.Wrap(sess.Watcher.Add(mainPkg.Dir), "watch main pkg error")
+
 		archive, err := sess.BuildPackage(mainPkg)
 		errors.Wrap(err, "BuildPackage error")
 
@@ -116,13 +115,11 @@ func (t *_Build) Build() {
 			}
 			t.pkgIndex = append(t.pkgIndex, _pkg)
 			t.pkgData[_pkg.Path] = _pkg
-
-			fmt.Println(dep.Name, dep.ImportPath, t.Hash(content), string(content)[:100])
 		}
 
 		// gen main
 		dt, err := json.Marshal(t.pkgIndex)
-		errors.Wrap(err,"pkgIndex json error")
+		errors.Wrap(err, "pkgIndex json error")
 
 		buf := &bytes.Buffer{}
 		errors.Wrap(mainTemplateMinified.Execute(buf, &_MainVars{
@@ -138,9 +135,36 @@ func (t *_Build) Build() {
 			Hash:    t.Hash(buf.Bytes()),
 		}
 
-		errors.ErrHandle(errors.Try(sess.WaitForChange), func(err *errors.Err) {
-			fmt.Println(err.P())
-		})
+		go func() {
+			if len(sess.Watcher.Errors) > 0 {
+				for err := range sess.Watcher.Errors {
+					errors.ErrLog(err)
+				}
+			}
+		}()
+
+		t.Options.PrintSuccess("watching for changes...\n")
+		for {
+			select {
+			case ev := <-sess.Watcher.Events:
+				if ev.Op&(fsnotify.Create|fsnotify.Write|fsnotify.Remove|fsnotify.Rename) == 0 || filepath.Base(ev.Name)[0] == '.' {
+					continue
+				}
+				if !strings.HasSuffix(ev.Name, ".go") && !strings.HasSuffix(ev.Name, ".inc.js") {
+					continue
+				}
+				t.Options.PrintSuccess("change detected: %s\n", ev.Name)
+			case err := <-sess.Watcher.Errors:
+				t.Options.PrintError("watcher error: %s\n", err.Error())
+			}
+			break
+		}
+
+		go func() {
+			for range sess.Watcher.Events {
+				// consume, else Close() may deadlock
+			}
+		}()
 	}
 }
 
