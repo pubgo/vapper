@@ -2,6 +2,7 @@ package jsbuild
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
@@ -13,13 +14,17 @@ import (
 	"github.com/gopherjs/gopherjs/compiler/prelude"
 	"github.com/pubgo/errors"
 	"github.com/pubgo/vapper/internal/config"
+	"go/build"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"text/template"
 )
 
 const jsGoPrelude = `$load.prelude=function(){};`
-
+var ValidExtensions = []string{".go", ".jsgo.html", ".inc.js", ".md"}
 var mainTemplateMinified = template.Must(template.New("main").Parse(
 	`"use strict";var $mainPkg,$load={};!function(){for(var n=0,t=0,e={{ .Json }},o=(document.getElementById("log"),function(){n++,window.jsgoProgress&&window.jsgoProgress(n,t),n==t&&function(){for(var n=0;n<e.length;n++)$load[e[n].path]();$mainPkg=$packages["{{ .Path }}"],$synthesizeMethods(),$packages.runtime.$init(),$go($mainPkg.$init,[]),$flushConsole()}()}),a=function(n){t++;var e=document.createElement("script");e.src=n,e.onload=o,e.onreadystatechange=o,document.head.appendChild(e)},s=0;s<e.length;s++)a("{{ .PkgUrl }}/"+e[s].path+"."+e[s].hash+".js")}();`,
 ))
@@ -37,7 +42,7 @@ type _Pkg struct {
 }
 
 func Default() *_Build {
-	return &_Build{Options: &gbuild.Options{CreateMapFile: true, Watch: true}, deps: make(map[string]*compiler.Archive)}
+	return &_Build{Options: &gbuild.Options{CreateMapFile: true, Watch: true}, deps: make(map[string]*_Pkg)}
 }
 
 type _Build struct {
@@ -52,7 +57,7 @@ type _Build struct {
 	pkgMain  _Pkg
 
 	OnlyHash bool
-	deps     map[string]*compiler.Archive
+	deps     map[string]*_Pkg
 }
 
 func (t *_Build) Hash(d []byte) string {
@@ -105,7 +110,7 @@ func (t *_Build) Build() {
 		deps, err := compiler.ImportDependencies(archive, sess.BuildImportPath)
 		errors.Wrap(err, "ImportDependencies error")
 
-		t.pkgIndex = []*_Pkg{}
+		t.pkgIndex = t.pkgIndex[:0]
 		t.pkgData = make(map[string]*_Pkg)
 
 		t.pkgIndex = append(t.pkgIndex, _pre)
@@ -114,30 +119,29 @@ func (t *_Build) Build() {
 		// gen pkgs
 		_vendor := filepath.Join(t.RootPath, "vendor/")
 		for _, dep := range deps {
-
 			_dt, err := json.Marshal(dep)
 			errors.Panic(err)
 			_dh := t.Hash(_dt)
-			if _, ok := t.deps[_dh]; ok {
-				continue
+
+			var _depPkg *_Pkg
+			if _pkg, ok := t.deps[_dh]; ok {
+				_depPkg = _pkg
 			} else {
-
+				if strings.HasPrefix(dep.ImportPath, _vendor) {
+					dep.ImportPath = strings.ReplaceAll(dep.ImportPath, _vendor, "")
+				}
+				content := t.GetPackageCode(dep, t.Options.Minify)
+				t.deps[_dh] = &_Pkg{
+					Content: content,
+					Path:    dep.ImportPath,
+					Hash:    t.Hash(content),
+				}
+				_depPkg = t.deps[_dh]
+				fmt.Println(dep.Name)
 			}
 
-			if strings.HasPrefix(dep.ImportPath, _vendor) {
-				dep.ImportPath = strings.ReplaceAll(dep.ImportPath, _vendor, "")
-			}
-
-			content := t.GetPackageCode(dep, t.Options.Minify)
-			_pkg := &_Pkg{
-				Content: content,
-				Path:    dep.ImportPath,
-				Hash:    t.Hash(content),
-			}
-			t.pkgIndex = append(t.pkgIndex, _pkg)
-			t.pkgData[_pkg.Path] = _pkg
-			t.deps[_dh] = dep
-			fmt.Println(dep.Name)
+			t.pkgIndex = append(t.pkgIndex, _depPkg)
+			t.pkgData[_depPkg.Path] = _depPkg
 		}
 
 		// gen main
@@ -187,4 +191,90 @@ func (t *_Build) GetPackageCode(archive *compiler.Archive, minify bool) []byte {
 
 	buf.WriteString("};")
 	return buf.Bytes()
+}
+
+// buf := &bytes.Buffer{}
+// errors.Panic(compiler.WriteArchive(deployer.StripArchive(archive), buf))
+// MimeBin  = "application/octet-stream"
+
+
+func getStandardLibraryPackages() []string {
+	cmd := exec.Command("go", "list", "./...")
+	fmt.Println(cmd.Env)
+	cmd.Env = []string{
+		fmt.Sprintf("GOPATH=%s", build.Default.GOPATH),
+		fmt.Sprintf("GOROOT=%s", build.Default.GOROOT),
+		fmt.Sprintf("HOME=%s", os.Getenv("HOME")),
+		fmt.Sprintf("GOCACHE=%s", "/Users/barry/Library/Caches/go-build"),
+	}
+	cmd.Dir = filepath.Join(build.Default.GOROOT, "src")
+	b, err := cmd.CombinedOutput()
+	fmt.Println(string(b))
+	fmt.Println(err)
+	errors.Panic(err)
+
+	all := strings.Split(strings.TrimSpace(string(b)), "\n")
+	excluded := map[string]bool{
+		"builtin":                true,
+		"internal/cpu":           true,
+		"net/http/pprof":         true,
+		"plugin":                 true,
+		"runtime/cgo":            true,
+		"os/signal/internal/pty": true,
+		"cmd/pprof":              true,
+		"cmd/trace":              true,
+	}
+	var filtered []string
+	for _, p := range all {
+		if excluded[p] {
+			continue
+		}
+		filtered = append(filtered, p)
+	}
+	return filtered
+}
+
+//MimeJs   = "application/javascript"
+const (
+	MimeJson = "application/json"
+	MimeJs   = "application/javascript"
+	MimeBin  = "application/octet-stream"
+	MimeHtml = "text/html"
+	MimeZip  = "application/zip"
+	MimeWasm = "application/wasm"
+)
+
+func  Worker(ctx context.Context) {
+	for item := range s.queue {
+		func() {
+			defer s.wait.Done()
+			if item.Wait != nil {
+				defer item.Wait.Done()
+			}
+			overwrite := true
+			cacheControl := "no-cache"
+			if item.Immutable {
+				overwrite = false
+				cacheControl = "public,max-age=31536000,immutable"
+			}
+			saved, err := s.fileserver.Write(ctx, item.Bucket, item.Name, bytes.NewReader(item.Contents), overwrite, item.Mime, cacheControl)
+			if err != nil {
+				s.err = err
+				return
+			}
+			if item.Count {
+				if saved {
+					atomic.AddInt32(&s.done, 1)
+				} else {
+					atomic.AddInt32(&s.unchanged, 1)
+				}
+			}
+			if item.Done != nil {
+				item.Done()
+			}
+			if item.Send {
+				s.sendMessage()
+			}
+		}()
+	}
 }

@@ -17,6 +17,7 @@ var goodTpl = `<nav>
 	<li><a rel=prefetch class='{path.startsWith("/blog")  ? "selected" : ""}' href='blog'>blog</a></li>
 </ul>
 </nav>`
+
 var goodStyle = `<style>
 	nav {
 		border-bottom: 1px solid rgba(170,30,30,0.1);

@@ -6,11 +6,8 @@ require (
 	github.com/aymerick/douceur v0.2.0
 	github.com/cespare/xxhash v1.1.0
 	github.com/dave/flux v0.0.0-20180702001202-0b08a93f243b
-	github.com/dave/frizz v0.0.0-20181022080000-c1df23557613
 	github.com/dave/jennifer v1.3.0
-	github.com/dave/jsgo v0.0.2
-	github.com/dave/services v0.1.0
-	github.com/dave/stablegob v1.0.0
+	github.com/dave/jsgo v0.0.2 // indirect
 	github.com/gin-contrib/cors v1.3.0
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-contrib/logger v0.0.1
@@ -32,5 +29,4 @@ require (
 	github.com/tdewolff/parse v2.3.4+incompatible
 	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
 	golang.org/x/sys v0.0.0-20190507160741-ecd444e8653b
-	gopkg.in/src-d/go-billy.v4 v4.3.0
 )
