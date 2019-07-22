@@ -42,7 +42,6 @@ func init() {
 }
 
 /*
-
 func ServeStatic(name string, w http.ResponseWriter, req *http.Request, mimeType string) error {
 	var file billy.File
 	var err error

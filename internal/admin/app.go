@@ -8,6 +8,7 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/pubgo/vapper/internal/config"
+	"github.com/pubgo/vapper/version"
 	"github.com/rs/zerolog"
 	"net/http"
 	"os"
@@ -23,12 +24,12 @@ func App() *gin.Engine {
 	r.Use(cors.Default())
 
 	// Custom logger
-	subLog := zerolog.New(os.Stdout).With().
-		Str("app", cfg.Cfg.App.Name).
-		Logger()
 	r.Use(logger.SetLogger(logger.Config{
-		Logger: &subLog,
-		UTC:    true,
+		Logger: func() *zerolog.Logger {
+			subLog := zerolog.New(os.Stdout).With().Str("app", cfg.Cfg.App.Name).Logger()
+			return &subLog
+		}(),
+		UTC: true,
 		//SkipPath:       []string{"/test"},
 		//SkipPathRegexp: regexp.MustCompile(`^/regexp\d*`),
 	}))
@@ -38,7 +39,7 @@ func App() *gin.Engine {
 
 	// app := r.Group("/login")// 用户登录
 
-	app := r.Group("/db2rest") // 需要auth校验，不然进不来
+	app := r.Group("/vapper") // 需要auth校验，不然进不来
 	app.GET("/", func(ctx *gin.Context) {
 		var rs []gin.H
 		for _, rt := range r.Routes() {

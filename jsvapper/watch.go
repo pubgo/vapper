@@ -1,4 +1,4 @@
-package vapper
+package jsvapper
 
 import (
 	"fmt"

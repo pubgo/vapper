@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"github.com/gobuffalo/envy"
 	gbuild "github.com/gopherjs/gopherjs/build"
 	"github.com/gopherjs/gopherjs/compiler"
@@ -56,13 +55,12 @@ type _Build struct {
 
 func (t *_Build) Hash(d []byte) string {
 	h := sha1.New()
-	h.Write(d)
+	_, err := h.Write(d)
+	errors.Panic(err)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
 func (t *_Build) Build() {
-	defer errors.Assert()
-
 	cfg := config.Default()
 
 	// gen prelude
@@ -73,17 +71,18 @@ func (t *_Build) Build() {
 		Path:    "prelude",
 	}
 
-	var sess *gbuild.Session
-	errors.Wrap(errors.Try(func() {
-		sess = gbuild.NewSession(t.Options)
-	}), "session error")
-
-	errors.T(sess.Watcher == nil, "file watcher error")
-	errors.Wrap(sess.Watcher.Add(t.RootPath), "watch error")
-	
 	for {
-		mainPkg, err := gbuild.Import(envy.CurrentPackage(), 0, sess.InstallSuffix(), t.Options.BuildTags)
-		errors.Wrap(err, "import error")
+		var sess *gbuild.Session
+		errors.Wrap(errors.Try(func() {
+			sess = gbuild.NewSession(t.Options)
+		}), "session error")
+
+		errors.T(sess.Watcher == nil, "file watcher error")
+		errors.Wrap(sess.Watcher.Add(t.RootPath), "watch error")
+
+		curPkg := envy.CurrentPackage()
+		mainPkg, err := gbuild.Import(curPkg, 0, sess.InstallSuffix(), t.Options.BuildTags)
+		errors.Wrap(err, "import error, path(%s)", curPkg)
 
 		errors.T(!mainPkg.IsCommand(), "not main package")
 		errors.Wrap(sess.Watcher.Add(mainPkg.Dir), "watch main pkg error")
@@ -134,37 +133,7 @@ func (t *_Build) Build() {
 			Path:    name,
 			Hash:    t.Hash(buf.Bytes()),
 		}
-
-		go func() {
-			if len(sess.Watcher.Errors) > 0 {
-				for err := range sess.Watcher.Errors {
-					errors.ErrLog(err)
-				}
-			}
-		}()
-
-		t.Options.PrintSuccess("watching for changes...\n")
-		for {
-			select {
-			case ev := <-sess.Watcher.Events:
-				if ev.Op&(fsnotify.Create|fsnotify.Write|fsnotify.Remove|fsnotify.Rename) == 0 || filepath.Base(ev.Name)[0] == '.' {
-					continue
-				}
-				if !strings.HasSuffix(ev.Name, ".go") && !strings.HasSuffix(ev.Name, ".inc.js") {
-					continue
-				}
-				t.Options.PrintSuccess("change detected: %s\n", ev.Name)
-			case err := <-sess.Watcher.Errors:
-				t.Options.PrintError("watcher error: %s\n", err.Error())
-			}
-			break
-		}
-
-		go func() {
-			for range sess.Watcher.Events {
-				// consume, else Close() may deadlock
-			}
-		}()
+		sess.WaitForChange()
 	}
 }
 

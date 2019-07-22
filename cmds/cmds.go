@@ -17,8 +17,8 @@ func init() {
 	var _cmd = "test"
 	rootCmd.AddCommand(initGenCmdCmd(&cobra.Command{
 		Use:     "cmd",
-		Short:   "db2rest gen cmd",
-		Example: "db2rest cmd hello",
+		Short:   "vapper gen cmd",
+		Example: "vapper cmd [hello]",
 		Run: func(cmd *cobra.Command, args []string) {
 			defer errors.Assert()
 
