@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/cespare/xxhash"
 	"github.com/gobuffalo/envy"
 	gbuild "github.com/gopherjs/gopherjs/build"
 	"github.com/gopherjs/gopherjs/compiler"
@@ -36,7 +37,7 @@ type _Pkg struct {
 }
 
 func Default() *_Build {
-	return &_Build{Options: &gbuild.Options{CreateMapFile: true, Watch: true}}
+	return &_Build{Options: &gbuild.Options{CreateMapFile: true, Watch: true}, deps: make(map[string]*compiler.Archive)}
 }
 
 type _Build struct {
@@ -51,6 +52,7 @@ type _Build struct {
 	pkgMain  _Pkg
 
 	OnlyHash bool
+	deps     map[string]*compiler.Archive
 }
 
 func (t *_Build) Hash(d []byte) string {
@@ -58,6 +60,16 @@ func (t *_Build) Hash(d []byte) string {
 	_, err := h.Write(d)
 	errors.Panic(err)
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+func (t *_Build) XXHash(bytes []byte) []byte {
+	h := xxhash.New()
+	defer h.Reset()
+
+	_, err := h.Write(bytes)
+	errors.Panic(err)
+
+	return h.Sum(nil)
 }
 
 func (t *_Build) Build() {
@@ -102,6 +114,16 @@ func (t *_Build) Build() {
 		// gen pkgs
 		_vendor := filepath.Join(t.RootPath, "vendor/")
 		for _, dep := range deps {
+
+			_dt, err := json.Marshal(dep)
+			errors.Panic(err)
+			_dh := t.Hash(_dt)
+			if _, ok := t.deps[_dh]; ok {
+				continue
+			} else {
+
+			}
+
 			if strings.HasPrefix(dep.ImportPath, _vendor) {
 				dep.ImportPath = strings.ReplaceAll(dep.ImportPath, _vendor, "")
 			}
@@ -114,6 +136,8 @@ func (t *_Build) Build() {
 			}
 			t.pkgIndex = append(t.pkgIndex, _pkg)
 			t.pkgData[_pkg.Path] = _pkg
+			t.deps[_dh] = dep
+			fmt.Println(dep.Name)
 		}
 
 		// gen main

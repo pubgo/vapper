@@ -4,13 +4,13 @@ go 1.12
 
 require (
 	github.com/aymerick/douceur v0.2.0
+	github.com/cespare/xxhash v1.1.0
 	github.com/dave/flux v0.0.0-20180702001202-0b08a93f243b
 	github.com/dave/frizz v0.0.0-20181022080000-c1df23557613
 	github.com/dave/jennifer v1.3.0
 	github.com/dave/jsgo v0.0.2
 	github.com/dave/services v0.1.0
 	github.com/dave/stablegob v1.0.0
-	github.com/fsnotify/fsnotify v1.4.7
 	github.com/gin-contrib/cors v1.3.0
 	github.com/gin-contrib/gzip v0.0.1
 	github.com/gin-contrib/logger v0.0.1
