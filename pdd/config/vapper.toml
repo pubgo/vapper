@@ -6,7 +6,7 @@ env="dev"
 site_url='http://localhost:1113' #网站地址
 
 [[services]]
-name="任务"
+name="gotask"
 server_url= 'http://localhost:8080/server_url' #接口地址
 proxy_uri="/server_url"
 

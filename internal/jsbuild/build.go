@@ -59,6 +59,14 @@ type _Build struct {
 	deps     map[string]*_Pkg
 }
 
+func (t *_Build) MainUrl() _Pkg {
+	return t.pkgMain
+}
+
+func (t *_Build) GetByHash(h string) *_Pkg {
+	return t.pkgData[h]
+}
+
 func (t *_Build) Hash(d []byte) string {
 	h := sha1.New()
 	_, err := h.Write(d)
@@ -116,7 +124,6 @@ func (t *_Build) Build() {
 		t.pkgData[_pre.Path] = _pre
 
 		// gen pkgs
-		_vendor := filepath.Join(t.RootPath, "vendor/")
 		for _, dep := range deps {
 			_dt, err := json.Marshal(dep)
 			errors.Panic(err)
@@ -126,9 +133,6 @@ func (t *_Build) Build() {
 			if _pkg, ok := t.deps[_dh]; ok {
 				_depPkg = _pkg
 			} else {
-				if strings.HasPrefix(dep.ImportPath, _vendor) {
-					dep.ImportPath = strings.ReplaceAll(dep.ImportPath, _vendor, "")
-				}
 				content := t.GetPackageCode(dep, t.Options.Minify)
 				t.deps[_dh] = &_Pkg{
 					Content: content,

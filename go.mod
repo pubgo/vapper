@@ -8,15 +8,16 @@ require (
 	github.com/dave/flux v0.0.0-20180702001202-0b08a93f243b
 	github.com/dave/jennifer v1.3.0
 	github.com/dave/jsgo v0.0.2 // indirect
-	github.com/gin-contrib/cors v1.3.0
-	github.com/gin-contrib/gzip v0.0.1
-	github.com/gin-contrib/logger v0.0.1
-	github.com/gin-contrib/sessions v0.0.0-20190512062852-3cb4c4f2d615
+	github.com/gin-contrib/cors v1.3.0 // indirect
+	github.com/gin-contrib/gzip v0.0.1 // indirect
+	github.com/gin-contrib/logger v0.0.1 // indirect
+	github.com/gin-contrib/sessions v0.0.0-20190512062852-3cb4c4f2d615 // indirect
 	github.com/gin-gonic/gin v1.4.0
 	github.com/gobuffalo/envy v1.7.0
 	github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c
 	github.com/gopherjs/vecty v0.0.0-20190701174234-2b6fc20f8913
 	github.com/gorilla/css v1.0.0 // indirect
+	github.com/gorilla/mux v1.7.3
 	github.com/kisielk/gotool v1.0.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/neelance/sourcemap v0.0.0-20151028013722-8c68805598ab

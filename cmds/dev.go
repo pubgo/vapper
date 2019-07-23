@@ -1,12 +1,51 @@
 package cmds
 
 import (
+	"bytes"
+	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/pubgo/errors"
 	"github.com/pubgo/vapper/internal/jsbuild"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
+	"mime"
+	"net/http"
 	"os"
+	"path"
+	"strings"
+	"text/template"
 )
+
+var _index = template.Must(template.New("index").Parse(
+	`<html>
+	<head>
+		<meta charset="utf-8">
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/ace.js"></script>
+	</head>
+	<body id="wrapper" style="margin: 0;">
+		<div id="progress-holder" style="width: 100%; padding: 25%;">
+			<div class="progress">
+				<div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+			</div>
+		</div>
+		<script>
+			window.jsgoProgress = function(count, total) {
+				var value = (count * 100.0) / (total * 1.0);
+				var bar = document.getElementById("progress-bar");
+				bar.style.width = value+"%";
+				bar.setAttribute('aria-valuenow', value);
+				if (count === total) {
+					document.getElementById("progress-holder").style.display = "none";
+				}
+			}
+		</script>
+		<script src="{{ .Script }}"></script>
+	</body>
+</html>`,
+))
 
 var (
 	_build = jsbuild.Default()
@@ -25,6 +64,36 @@ func initDevCmd(cmd *cobra.Command) *cobra.Command {
 	return cmd
 }
 
+func jsHandler(w http.ResponseWriter, r *http.Request) {
+	_m := _build.MainUrl()
+	w.Write(_m.Content)
+}
+
+func pkgHandler(w http.ResponseWriter, r *http.Request) {
+	us := strings.Split(strings.ReplaceAll(r.URL.Path, "/pkg/", ""), ".")
+	_pkg := _build.GetByHash(strings.Join(us[:len(us)-2],"."))
+	if _pkg == nil {
+		fmt.Println(us)
+		fmt.Fprintf(w, "not found %s", r.URL.Path)
+		return
+	}
+
+	w.Header().Set("Cache-Control", "public,max-age=31536000,immutable")
+	//fmt.Println(mime.TypeByExtension(path.Ext(r.URL.Path)))
+
+	w.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(r.URL.Path)))
+	w.Write(_pkg.Content)
+}
+
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	_m := _build.MainUrl()
+	buf := &bytes.Buffer{}
+	errors.Wrap(_index.Execute(buf, struct {
+		Script string
+	}{Script: fmt.Sprintf("/js/%s.%s.js", _m.Path, _m.Hash)}), "mainTemplateMinified error")
+	w.Write(buf.Bytes())
+}
+
 func init() {
 	rootCmd.AddCommand(initDevCmd(&cobra.Command{
 		Use:   "dev",
@@ -34,9 +103,18 @@ func init() {
 
 			_curDir, err := os.Getwd()
 			errors.Panic(err)
-
 			_build.RootPath = _curDir
-			_build.Build()
+
+			r := mux.NewRouter()
+			r.HandleFunc("/", indexHandler)
+			r.PathPrefix("/pkg").HandlerFunc(pkgHandler)
+			r.PathPrefix("/js").HandlerFunc(jsHandler)
+			r.PathPrefix("/services").HandlerFunc(pkgHandler)
+			http.Handle("/", r)
+
+			go _build.Build()
+			fmt.Println("ok")
+			errors.Panic(http.ListenAndServe(":8080", nil))
 		},
 	}))
 }
