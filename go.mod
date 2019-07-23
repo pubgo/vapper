@@ -15,13 +15,13 @@ require (
 	github.com/gin-gonic/gin v1.4.0
 	github.com/gobuffalo/envy v1.7.0
 	github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c
-	github.com/gopherjs/vecty v0.0.0-20190701174234-2b6fc20f8913
+	github.com/gopherjs/vecty v0.0.0-20190701174234-2b6fc20f8913 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/gorilla/mux v1.7.3
 	github.com/kisielk/gotool v1.0.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/neelance/sourcemap v0.0.0-20151028013722-8c68805598ab
-	github.com/pubgo/errors v0.3.2
+	github.com/pubgo/errors v0.3.4
 	github.com/rs/zerolog v1.14.3
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/siongui/godom v0.0.0-20181006133514-8ba1cdb25192

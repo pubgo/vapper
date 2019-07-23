@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 )
 
 const jsGoPrelude = `$load.prelude=function(){};`
@@ -95,12 +96,8 @@ func (t *_Build) Build() {
 		Path:    "prelude",
 	}
 
-	for {
-		var sess *gbuild.Session
-		errors.Wrap(errors.Try(func() {
-			sess = gbuild.NewSession(t.Options)
-		}), "session error")
-
+	errors.RetryAt(time.Second, func(at time.Duration) {
+		sess := gbuild.NewSession(t.Options)
 		errors.T(sess.Watcher == nil, "file watcher error")
 		errors.Wrap(sess.Watcher.Add(t.RootPath), "watch error")
 
@@ -164,7 +161,7 @@ func (t *_Build) Build() {
 			Hash:    t.Hash(buf.Bytes()),
 		}
 		sess.WaitForChange()
-	}
+	})
 }
 
 func (t *_Build) GetPackageCode(archive *compiler.Archive, minify bool) []byte {
