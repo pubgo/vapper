@@ -95,71 +95,73 @@ func (t *_Build) Build() {
 		Path:    "prelude",
 	}
 
-	fmt.Println("start ... ")
-	sess := gbuild.NewSession(t.Options)
-	errors.T(sess.Watcher == nil, "file watcher error")
-	errors.Wrap(sess.Watcher.Add(t.RootPath), "watch error")
+	for {
+		sess := gbuild.NewSession(t.Options)
+		errors.T(sess.Watcher == nil, "file watcher error")
+		errors.Wrap(sess.Watcher.Add(t.RootPath), "watch error")
 
-	curPkg := envy.CurrentPackage()
-	mainPkg, err := gbuild.Import(curPkg, 0, sess.InstallSuffix(), t.Options.BuildTags)
-	errors.Wrap(err, "import error, path(%s)", curPkg)
+		curPkg := envy.CurrentPackage()
+		mainPkg, err := gbuild.Import(curPkg, 0, sess.InstallSuffix(), t.Options.BuildTags)
+		errors.Wrap(err, "import error, path(%s)", curPkg)
 
-	errors.T(!mainPkg.IsCommand(), "not main package")
-	errors.Wrap(sess.Watcher.Add(mainPkg.Dir), "watch main pkg error")
+		errors.T(!mainPkg.IsCommand(), "not main package")
+		errors.Wrap(sess.Watcher.Add(mainPkg.Dir), "watch main pkg error")
 
-	archive, err := sess.BuildPackage(mainPkg)
-	errors.Wrap(err, "BuildPackage error")
+		archive, err := sess.BuildPackage(mainPkg)
+		errors.Wrap(err, "BuildPackage error")
 
-	deps, err := compiler.ImportDependencies(archive, sess.BuildImportPath)
-	errors.Wrap(err, "ImportDependencies error")
+		deps, err := compiler.ImportDependencies(archive, sess.BuildImportPath)
+		errors.Wrap(err, "ImportDependencies error")
 
-	t.pkgIndex = t.pkgIndex[:0]
-	t.pkgData = make(map[string]*_Pkg)
+		t.pkgIndex = t.pkgIndex[:0]
+		t.pkgData = make(map[string]*_Pkg)
 
-	t.pkgIndex = append(t.pkgIndex, _pre)
-	t.pkgData[_pre.Path] = _pre
+		t.pkgIndex = append(t.pkgIndex, _pre)
+		t.pkgData[_pre.Path] = _pre
 
-	// gen pkgs
-	for _, dep := range deps {
-		_dt, err := json.Marshal(dep)
-		errors.Panic(err)
-		_dh := t.Hash(_dt)
+		// gen pkgs
+		for _, dep := range deps {
+			_dt, err := json.Marshal(dep)
+			errors.Panic(err)
+			_dh := t.Hash(_dt)
 
-		var _depPkg *_Pkg
-		if _pkg, ok := t.deps[_dh]; ok {
-			_depPkg = _pkg
-		} else {
-			content := t.GetPackageCode(dep, t.Options.Minify)
-			t.deps[_dh] = &_Pkg{
-				Content: content,
-				Path:    dep.ImportPath,
-				Hash:    t.Hash(content),
+			var _depPkg *_Pkg
+			if _pkg, ok := t.deps[_dh]; ok {
+				_depPkg = _pkg
+			} else {
+				content := t.GetPackageCode(dep, t.Options.Minify)
+				t.deps[_dh] = &_Pkg{
+					Content: content,
+					Path:    dep.ImportPath,
+					Hash:    t.Hash(content),
+				}
+				_depPkg = t.deps[_dh]
 			}
-			_depPkg = t.deps[_dh]
+
+			t.pkgIndex = append(t.pkgIndex, _depPkg)
+			t.pkgData[_depPkg.Path] = _depPkg
 		}
 
-		t.pkgIndex = append(t.pkgIndex, _depPkg)
-		t.pkgData[_depPkg.Path] = _depPkg
+		// gen main
+		dt, err := json.Marshal(t.pkgIndex)
+		errors.Wrap(err, "pkgIndex json error")
+
+		buf := &bytes.Buffer{}
+		errors.Wrap(mainTemplateMinified.Execute(buf, &_MainVars{
+			Path:   mainPkg.ImportPath,
+			Json:   string(dt),
+			PkgUrl: cfg.Cfg.Pkg.URL,
+		}), "mainTemplateMinified error")
+
+		_, name := filepath.Split(t.RootPath)
+		t.pkgMain = _Pkg{
+			Content: buf.Bytes(),
+			Path:    name,
+			Hash:    t.Hash(buf.Bytes()),
+		}
+
+		sess.WaitForChange()
 	}
-
-	// gen main
-	dt, err := json.Marshal(t.pkgIndex)
-	errors.Wrap(err, "pkgIndex json error")
-
-	buf := &bytes.Buffer{}
-	errors.Wrap(mainTemplateMinified.Execute(buf, &_MainVars{
-		Path:   mainPkg.ImportPath,
-		Json:   string(dt),
-		PkgUrl: cfg.Cfg.Pkg.URL,
-	}), "mainTemplateMinified error")
-
-	_, name := filepath.Split(t.RootPath)
-	t.pkgMain = _Pkg{
-		Content: buf.Bytes(),
-		Path:    name,
-		Hash:    t.Hash(buf.Bytes()),
-	}
-	sess.WaitForChange()
 }
 
 func (t *_Build) GetPackageCode(archive *compiler.Archive, minify bool) []byte {

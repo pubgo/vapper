@@ -8,6 +8,7 @@ require (
 	github.com/dave/flux v0.0.0-20180702001202-0b08a93f243b
 	github.com/dave/jennifer v1.3.0
 	github.com/dave/jsgo v0.0.2 // indirect
+	github.com/fsnotify/fsnotify v1.4.7
 	github.com/gin-contrib/cors v1.3.0 // indirect
 	github.com/gin-contrib/gzip v0.0.1 // indirect
 	github.com/gin-contrib/logger v0.0.1 // indirect
