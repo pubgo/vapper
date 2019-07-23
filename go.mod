@@ -27,6 +27,8 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/tdewolff/parse v2.3.4+incompatible
+	github.com/zserge/lorca v0.1.7 // indirect
+	github.com/zserge/webview v0.0.0-20190123072648-16c93bcaeaeb // indirect
 	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
 	golang.org/x/sys v0.0.0-20190507160741-ecd444e8653b
 )

@@ -2,7 +2,6 @@ package jsbuild
 
 import (
 	"bytes"
-	"context"
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
@@ -19,11 +18,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync/atomic"
 	"text/template"
 )
 
 const jsGoPrelude = `$load.prelude=function(){};`
+
 var ValidExtensions = []string{".go", ".jsgo.html", ".inc.js", ".md"}
 var mainTemplateMinified = template.Must(template.New("main").Parse(
 	`"use strict";var $mainPkg,$load={};!function(){for(var n=0,t=0,e={{ .Json }},o=(document.getElementById("log"),function(){n++,window.jsgoProgress&&window.jsgoProgress(n,t),n==t&&function(){for(var n=0;n<e.length;n++)$load[e[n].path]();$mainPkg=$packages["{{ .Path }}"],$synthesizeMethods(),$packages.runtime.$init(),$go($mainPkg.$init,[]),$flushConsole()}()}),a=function(n){t++;var e=document.createElement("script");e.src=n,e.onload=o,e.onreadystatechange=o,document.head.appendChild(e)},s=0;s<e.length;s++)a("{{ .PkgUrl }}/"+e[s].path+"."+e[s].hash+".js")}();`,
@@ -137,7 +136,6 @@ func (t *_Build) Build() {
 					Hash:    t.Hash(content),
 				}
 				_depPkg = t.deps[_dh]
-				fmt.Println(dep.Name)
 			}
 
 			t.pkgIndex = append(t.pkgIndex, _depPkg)
@@ -197,7 +195,6 @@ func (t *_Build) GetPackageCode(archive *compiler.Archive, minify bool) []byte {
 // errors.Panic(compiler.WriteArchive(deployer.StripArchive(archive), buf))
 // MimeBin  = "application/octet-stream"
 
-
 func getStandardLibraryPackages() []string {
 	cmd := exec.Command("go", "list", "./...")
 	fmt.Println(cmd.Env)
@@ -244,37 +241,37 @@ const (
 	MimeWasm = "application/wasm"
 )
 
-func  Worker(ctx context.Context) {
-	for item := range s.queue {
-		func() {
-			defer s.wait.Done()
-			if item.Wait != nil {
-				defer item.Wait.Done()
-			}
-			overwrite := true
-			cacheControl := "no-cache"
-			if item.Immutable {
-				overwrite = false
-				cacheControl = "public,max-age=31536000,immutable"
-			}
-			saved, err := s.fileserver.Write(ctx, item.Bucket, item.Name, bytes.NewReader(item.Contents), overwrite, item.Mime, cacheControl)
-			if err != nil {
-				s.err = err
-				return
-			}
-			if item.Count {
-				if saved {
-					atomic.AddInt32(&s.done, 1)
-				} else {
-					atomic.AddInt32(&s.unchanged, 1)
-				}
-			}
-			if item.Done != nil {
-				item.Done()
-			}
-			if item.Send {
-				s.sendMessage()
-			}
-		}()
-	}
-}
+//func  Worker(ctx context.Context) {
+//	for item := range s.queue {
+//		func() {
+//			defer s.wait.Done()
+//			if item.Wait != nil {
+//				defer item.Wait.Done()
+//			}
+//			overwrite := true
+//			cacheControl := "no-cache"
+//			if item.Immutable {
+//				overwrite = false
+//				cacheControl = "public,max-age=31536000,immutable"
+//			}
+//			saved, err := s.fileserver.Write(ctx, item.Bucket, item.Name, bytes.NewReader(item.Contents), overwrite, item.Mime, cacheControl)
+//			if err != nil {
+//				s.err = err
+//				return
+//			}
+//			if item.Count {
+//				if saved {
+//					atomic.AddInt32(&s.done, 1)
+//				} else {
+//					atomic.AddInt32(&s.unchanged, 1)
+//				}
+//			}
+//			if item.Done != nil {
+//				item.Done()
+//			}
+//			if item.Send {
+//				s.sendMessage()
+//			}
+//		}()
+//	}
+//}
