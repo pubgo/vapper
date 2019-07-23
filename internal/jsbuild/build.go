@@ -97,6 +97,7 @@ func (t *_Build) Build() {
 	}
 
 	errors.RetryAt(time.Second, func(at time.Duration) {
+		fmt.Println("start ... ")
 		sess := gbuild.NewSession(t.Options)
 		errors.T(sess.Watcher == nil, "file watcher error")
 		errors.Wrap(sess.Watcher.Add(t.RootPath), "watch error")
