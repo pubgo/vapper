@@ -61,7 +61,6 @@ type Context struct {
 // information.
 type Handler interface {
 	Handle(ctx *Context)
-	ReadyStateComplete()
 }
 
 // route is a representation of a specific route

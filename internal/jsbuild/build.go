@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 )
 
 const jsGoPrelude = `$load.prelude=function(){};`
@@ -95,7 +96,7 @@ func (t *_Build) Build() {
 		Path:    "prelude",
 	}
 
-	for {
+	errors.Ticker(func(_ time.Time) time.Duration {
 		sess := gbuild.NewSession(t.Options)
 		errors.T(sess.Watcher == nil, "file watcher error")
 		errors.Wrap(sess.Watcher.Add(t.RootPath), "watch error")
@@ -130,13 +131,13 @@ func (t *_Build) Build() {
 				_depPkg = _pkg
 			} else {
 				content := t.GetPackageCode(dep, t.Options.Minify)
-				t.deps[_dh] = &_Pkg{
+				_depPkg = &_Pkg{
 					Content: content,
 					Path:    dep.ImportPath,
 					Hash:    t.Hash(content),
 				}
-				_depPkg = t.deps[_dh]
 			}
+			t.deps[_dh] = _depPkg
 
 			t.pkgIndex = append(t.pkgIndex, _depPkg)
 			t.pkgData[_depPkg.Path] = _depPkg
@@ -161,7 +162,8 @@ func (t *_Build) Build() {
 		}
 
 		sess.WaitForChange()
-	}
+		return time.Second
+	})
 }
 
 func (t *_Build) GetPackageCode(archive *compiler.Archive, minify bool) []byte {

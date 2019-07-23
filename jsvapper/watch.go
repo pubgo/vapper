@@ -19,7 +19,9 @@ func (t *Vapper) Delete(key interface{}) {
 }
 
 func (t *Vapper) Fail(err error) {
-	Window.Call("alert", err.Error())
+	if err != nil {
+		Window.Call("alert", err.Error())
+	}
 }
 
 func (t *Vapper) Debug(message ...interface{}) {
@@ -32,13 +34,14 @@ func (t *Vapper) Log(message ...interface{}) {
 		m.SetInnerHTML("")
 		return
 	}
+
 	s := fmt.Sprint(message[0])
 	if m.InnerHTML() != s {
 		requestAnimationFrame()
 		m.SetInnerHTML(s)
 		requestAnimationFrame()
 	}
-	Window.Get("console").Call("log", message...)
+	t.Debug(message...)
 }
 
 func (t *Vapper) Logf(format string, args ...interface{}) {

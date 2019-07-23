@@ -6,7 +6,6 @@ import (
 	dom "github.com/siongui/godom"
 	"reflect"
 	"sync"
-	"time"
 )
 
 var _app sync.Once
@@ -51,9 +50,7 @@ func (t *Vapper) handleInject(_in interface{}) {
 	defer errors.Assert()
 
 	_hn := reflect.ValueOf(_in)
-	if !_hn.IsValid() || _hn.IsNil() {
-		panic("func inject error")
-	}
+	errors.T(!_hn.IsValid() || _hn.IsNil(), "func inject error")
 
 	_Init := _hn.MethodByName("Init")
 	if !_Init.IsValid() || _Init.IsNil() {
@@ -98,7 +95,7 @@ func (t *Vapper) Start() {
 
 	// watch store
 	t.watch()
-	
+
 	// watch router
 	if browserSupportsPushState && !t.ForceHashURL {
 		t.pathChanged(getPath(), true)
@@ -110,28 +107,6 @@ func (t *Vapper) Start() {
 	if t.ShouldInterceptLinks {
 		t.InterceptLinks()
 	}
-
-	//pt := Window.Get("location").Get("pathname").String()
-	//if t.CanNavigate(pt) {
-	//	t.Navigate(pt)
-	//} else {
-	//	t.Navigate("/")
-	//}
-
-	go func() {
-		for {
-			if dom.Document.Get("readyState").String() != "complete" {
-				time.Sleep(time.Millisecond * 10)
-				continue
-			}
-
-			path := dom.Window.Get("location").Get("pathname").String()
-			if bestRoute, _, _ := t.findBestRoute(path); bestRoute != nil {
-				go bestRoute.handler.ReadyStateComplete()
-			}
-			return
-		}
-	}()
 }
 
 // Stop causes the router to stop listening for changes, and therefore
