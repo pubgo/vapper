@@ -124,6 +124,7 @@ func removeStyleTags(s string) string {
 	s = strings.Replace(s, "</style>", "", -1)
 	return s
 }
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }

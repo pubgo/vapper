@@ -5,6 +5,8 @@ import (
 	"github.com/pubgo/errors"
 	"github.com/pubgo/vapper/internal/config"
 	"github.com/pubgo/vapper/version"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -87,4 +89,12 @@ func copyEnvVars(prefix string) {
 			}
 		}
 	}
+}
+
+func init() {
+	log.Logger = log.Output(zerolog.NewConsoleWriter()).
+		With().
+		Caller().
+		Str("pkg", "vapper").
+		Logger()
 }

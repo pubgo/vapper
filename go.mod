@@ -8,7 +8,6 @@ require (
 	github.com/dave/flux v0.0.0-20180702001202-0b08a93f243b
 	github.com/dave/jennifer v1.3.0
 	github.com/dave/jsgo v0.0.2 // indirect
-	github.com/fsnotify/fsnotify v1.4.7
 	github.com/gin-contrib/cors v1.3.0 // indirect
 	github.com/gin-contrib/gzip v0.0.1 // indirect
 	github.com/gin-contrib/logger v0.0.1 // indirect
@@ -22,7 +21,7 @@ require (
 	github.com/kisielk/gotool v1.0.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/neelance/sourcemap v0.0.0-20151028013722-8c68805598ab
-	github.com/pubgo/errors v0.3.4
+	github.com/pubgo/errors v0.3.7
 	github.com/rs/zerolog v1.14.3
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/siongui/godom v0.0.0-20181006133514-8ba1cdb25192

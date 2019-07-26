@@ -49,8 +49,7 @@ type Transpiler struct {
 
 func (s *Transpiler) read() {
 	bb, err := ioutil.ReadAll(s.reader)
-	errors.Wrap(err, "reading component template")
-
+	errors.Wrap(err, "reading component template error")
 	s.html = string(bb)
 }
 
@@ -60,8 +59,8 @@ func (s *Transpiler) Code() string {
 
 func (s *Transpiler) transcode() {
 	// check for valid HTML
-	_, err := template.New("syntaxcheck").Parse(s.html)
-	errors.Panic(err)
+	_, err := template.New("syntaxCheck").Parse(s.html)
+	errors.Wrap(err, "template parse error")
 
 	decoder := xml.NewDecoder(bytes.NewBufferString(s.html))
 
@@ -72,8 +71,8 @@ func (s *Transpiler) transcode() {
 		Separator: ",",
 	}
 
-	var transcode func(*xml.Decoder) ([]jen.Code, error)
-	transcode = func(decoder *xml.Decoder) (code []jen.Code, err error) {
+	var _transcode func(*xml.Decoder) ([]jen.Code, error)
+	_transcode = func(decoder *xml.Decoder) (code []jen.Code, err error) {
 		token, err := decoder.Token()
 		if err != nil {
 			return nil, err
@@ -187,7 +186,7 @@ func (s *Transpiler) transcode() {
 					})
 				}
 				for {
-					c, err := transcode(decoder)
+					c, err := _transcode(decoder)
 					if err != nil {
 						if err == EOT {
 							break
@@ -253,31 +252,6 @@ func (s *Transpiler) transcode() {
 
 				}
 				if hasField {
-
-					/*
-						re := regexp.MustCompile(`({vecty-call:[a-zA-Z0-9]+})`)
-						t := "{vecty-call:Alone}thing{vecty-call:Thing}stuff{vecty-call:Stuff}other{vecty-call:Blue}"
-						crResult := re.FindAllStringIndex(t, -1)
-						index := 0
-						for matchNumber, match := range crResult {
-							fmt.Println(match)
-							fmt.Println("Before:", t[index:match[0]])
-							fmt.Println("Match:", t[match[0]:match[1]])
-							fmt.Println(re.FindAllStringSubmatch(t, index))
-							if matchNumber < len(crResult)-1 {
-								// there's another match
-
-								fmt.Println(matchNumber, len(crResult), index, crResult, "There is another")
-								fmt.Println("next Result:",crResult[matchNumber+1][0])
-								fmt.Println(t[match[1]:])
-								fmt.Println(crResult[matchNumber+1])
-								fmt.Println("Internal After:", t[match[1]:crResult[matchNumber+1][0]])
-							}
-
-							fmt.Println("After:", t[match[1]:])
-							index = match[1]
-						}
-					*/
 					var statements []jen.Code
 					crResult := fieldRegexp.FindAllStringIndex(str, -1)
 					index := 0
@@ -292,14 +266,6 @@ func (s *Transpiler) transcode() {
 							between = str[match[1]:crResult[matchNumber+1][0]]
 						}
 						after = str[match[1]:]
-						/*
-							g.Qual("fmt", "Sprintf").Call(
-								jen.Lit("%s%s%s"),
-								jen.Lit(lhs),
-								jen.Id("p").Dot(fnCall).Call(),
-								jen.Lit(rhs),
-							)
-						*/
 						if before != "" && !strings.Contains(before, "vecty-field") {
 							statements = append(statements, jen.Qual("github.com/gopherjs/vecty", "Text").Call(
 								jen.Lit(before),
@@ -352,7 +318,7 @@ func (s *Transpiler) transcode() {
 	})
 	var elements []jen.Code
 	for {
-		c, err := transcode(decoder)
+		c, err := _transcode(decoder)
 		if err != nil {
 			if err == io.EOF || err == EOT {
 				break
