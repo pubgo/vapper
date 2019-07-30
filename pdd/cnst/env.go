@@ -29,23 +29,3 @@ func MatchLogLevel(e string) bool {
 		zerolog.InfoLevel.String() == e ||
 		zerolog.PanicLevel.String() == e
 }
-
-const (
-	SlackCode        = "slack"
-	SlackUrlKey      = "url"
-	SlackTemplateKey = "template"
-	SlackChannelKey  = "channel"
-)
-
-const (
-	MailCode        = "mail"
-	MailTemplateKey = "template"
-	MailServerKey   = "server"
-	MailUserKey     = "user"
-)
-
-const (
-	WebhookCode        = "webhook"
-	WebhookTemplateKey = "template"
-	WebhookUrlKey      = "url"
-)

@@ -24,6 +24,7 @@ type Vapper struct {
 	notifier   flux.NotifierInterface
 
 	stores        []flux.StoreInterface
+
 	routes        []*route
 	notFoundRoute *route
 	cfg           reflect.Value

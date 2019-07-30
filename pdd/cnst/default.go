@@ -10,3 +10,4 @@ var Default = struct {
 }{
 	JsPkg: filepath.Join(build.Default.GOPATH, "js_pkg"),
 }
+
