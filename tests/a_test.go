@@ -5,6 +5,7 @@ import (
 	"github.com/pubgo/errors"
 	"github.com/pubgo/vapper/pdd/cnst"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -33,4 +34,9 @@ func TestName(t *testing.T) {
 
 func TestJsPkg(t *testing.T) {
 	t.Log(cnst.Default.JsPkg)
+}
+
+func TestWww(t *testing.T) {
+	const a="ddddbbb"
+	fmt.Println(strings.TrimLeft(a,"ddd."))
 }

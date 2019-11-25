@@ -20,6 +20,10 @@ import (
 	"github.com/dave/jennifer/jen"
 )
 
+const (
+	vectyPackage = "github.com/gopherjs/vecty/elem"
+)
+
 var callRegexp = regexp.MustCompile(`{vecty-call:([a-zA-Z0-9_\-]+)}`)
 var fieldRegexp = regexp.MustCompile(`{vecty-field:([a-zA-Z0-9_\-]+})`)
 var EOT = es.New("end of tag")
@@ -82,7 +86,7 @@ func (s *Transpiler) transcode() {
 		case xml.StartElement:
 			tag := token.Name.Local
 			vectyFunction, ok := transpiler.ElemNames[tag]
-			vectyPackage := "github.com/gopherjs/vecty/elem"
+			_vectyPackage := vectyPackage
 			vectyParamater := ""
 			var ce *jen.Statement
 			if !ok {
@@ -93,13 +97,13 @@ func (s *Transpiler) transcode() {
 					vectyFunction = ""
 				} else {
 					vectyFunction = "Tag"
-					vectyPackage = "github.com/gopherjs/vecty"
+					_vectyPackage = "github.com/gopherjs/vecty"
 					vectyParamater = tag
 				}
 			}
 			var outer error
 
-			q := jen.Qual(vectyPackage, vectyFunction).CustomFunc(call, func(g *jen.Group) {
+			q := jen.Qual(_vectyPackage, vectyFunction).CustomFunc(call, func(g *jen.Group) {
 				if vectyParamater != "" {
 					g.Lit(vectyParamater)
 				}

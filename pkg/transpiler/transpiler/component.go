@@ -27,5 +27,4 @@ func ComponentElement(appPackage, componentName string, token *xml.StartElement)
 	//	}
 	//}))
 	//return baseDecl
-
 }
